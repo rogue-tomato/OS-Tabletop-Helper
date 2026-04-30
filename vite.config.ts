@@ -13,4 +13,10 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
   },
+  server: {
+    // Cloudflare quick tunnels rotate the subdomain on every restart.
+    // The leading "." matches any subdomain of trycloudflare.com so we
+    // don't need to edit this file each time the tunnel URL changes.
+    allowedHosts: ['.trycloudflare.com'],
+  },
 });

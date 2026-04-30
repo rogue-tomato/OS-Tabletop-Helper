@@ -57,6 +57,18 @@ export type OathswornCharacter = {
   role?: string;
   playstyle?: string;
   art: string;
+  /** Optional dedicated cover/thumb for the character list. Drop a file
+   *  at `public/characters/<slug>/cover.jpg` and set this field. Falls
+   *  back to `art` automatically if the file is missing. */
+  listImage?: string;
+  /** CSS `object-position` value for the hero image on narrow screens.
+   *  Default applied at adapter time is "25% center" (bias toward the
+   *  left of the artwork). Set this per-character only when that
+   *  default crops badly. */
+  heroObjectPositionMobile?: string;
+  /** CSS `object-position` for the hero image on wide screens. Default
+   *  "center center". */
+  heroObjectPositionDesktop?: string;
   specialAbility: { title: string; text: string }[];
   canEquip: string;
   lore?: string;
@@ -67,6 +79,10 @@ export type OathswornCharacter = {
     level10: OathswornAbility[];
     level15: OathswornAbility[];
   };
+  /** Hidden tags consumed by the home-page search. The user never sees
+   *  them — they only widen which queries match (e.g. "tank", "shield",
+   *  "bow", "summon"). Free-form lowercase strings. */
+  searchTags?: string[];
 };
 
 const idSlug = (raw: string): string =>

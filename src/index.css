@@ -15,9 +15,23 @@
     @apply font-body text-bone bg-ink-950 antialiased;
     font-size: 16px;
     line-height: 1.5;
+    /* Layered atmospheric backdrop:
+       - warm ember halo from the top-left
+       - cool malefic halo from the bottom-right
+       - a subtle inner vignette to deepen the centre
+       - a faint diagonal weave that adds material texture without
+         hurting readability */
     background-image:
-      radial-gradient(ellipse at 20% -10%, rgba(201, 133, 56, 0.18), transparent 55%),
-      radial-gradient(ellipse at 90% 110%, rgba(80, 30, 90, 0.18), transparent 55%);
+      radial-gradient(ellipse at 18% -12%, rgba(201, 133, 56, 0.22), transparent 58%),
+      radial-gradient(ellipse at 92% 112%, rgba(80, 30, 90, 0.22), transparent 60%),
+      radial-gradient(circle at 50% 55%, rgba(20, 14, 22, 0.45), transparent 70%),
+      repeating-linear-gradient(
+        45deg,
+        transparent 0,
+        transparent 24px,
+        rgba(245, 200, 120, 0.025) 24px,
+        rgba(245, 200, 120, 0.025) 25px
+      );
     background-attachment: fixed;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -31,11 +45,84 @@
 }
 
 @layer components {
+  /* Standard parchment/iron panel — sharper than before, with a subtle
+     inner frame line so it reads as engraved rather than card-flat. */
   .panel {
-    @apply rounded-2xl border border-ember-700/30 bg-ink-900/70 backdrop-blur-md shadow-lg;
+    @apply rounded-md border border-ember-700/40 bg-ink-900/75 backdrop-blur-md shadow-lg;
+    position: relative;
+  }
+  .panel::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(165, 95, 36, 0.12);
+    border-radius: 3px;
+    pointer-events: none;
   }
   .panel-soft {
-    @apply rounded-2xl border border-ember-700/20 bg-ink-900/50 backdrop-blur-sm;
+    @apply rounded-md border border-ember-700/25 bg-ink-900/55 backdrop-blur-sm;
+  }
+  /* Trading-card-style tile for the character list. Keeps generous
+     rounded corners but adds L-shape gold corner brackets so it feels
+     framed instead of generic. */
+  .ornate-card {
+    @apply rounded-xl border border-ember-700/35 bg-ink-900/70 backdrop-blur-md shadow-lg;
+    position: relative;
+  }
+  .ornate-card::before,
+  .ornate-card::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .ornate-card::before {
+    top: -1px;
+    left: -1px;
+    border-top: 1px solid rgba(245, 200, 120, 0.55);
+    border-left: 1px solid rgba(245, 200, 120, 0.55);
+    border-top-left-radius: 12px;
+  }
+  .ornate-card::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 1px solid rgba(245, 200, 120, 0.55);
+    border-right: 1px solid rgba(245, 200, 120, 0.55);
+    border-bottom-right-radius: 12px;
+  }
+  /* Section titles inside panels — adds a thin gold underline that
+     fades out, plus a leading diamond marker. */
+  .section-header {
+    position: relative;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-header::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: linear-gradient(135deg, rgba(245, 200, 120, 0.9), rgba(165, 95, 36, 0.6));
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+  .section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      rgba(245, 200, 120, 0.55),
+      rgba(165, 95, 36, 0.18) 35%,
+      transparent
+    );
   }
   .ember-text {
     @apply text-ember-400;
@@ -46,6 +133,16 @@
   .tap-target {
     min-height: 44px;
     min-width: 44px;
+  }
+  /* Hero image focal point — driven by per-character CSS variables set
+     on a parent (`--hero-pos-mobile` / `--hero-pos-desktop`). */
+  .hero-art {
+    object-position: var(--hero-pos-mobile, 25% center);
+  }
+  @media (min-width: 640px) {
+    .hero-art {
+      object-position: var(--hero-pos-desktop, center center);
+    }
   }
 }
 

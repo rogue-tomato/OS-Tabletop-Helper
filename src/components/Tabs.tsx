@@ -14,7 +14,7 @@ export function Tabs<T extends string>({ tabs, active, onChange }: Props<T>) {
     <div
       role="tablist"
       aria-label="Character sections"
-      className="flex gap-1 p-1 rounded-xl bg-ink-800/70 border border-ember-700/20 overflow-x-auto scrollbar-hidden"
+      className="flex gap-1 p-1 rounded-md bg-ink-800/70 border border-ember-700/35 overflow-x-auto scrollbar-hidden"
     >
       {tabs.map((tab) => {
         const isActive = tab.id === active;
@@ -25,7 +25,7 @@ export function Tabs<T extends string>({ tabs, active, onChange }: Props<T>) {
             aria-selected={isActive}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`tap-target flex-1 min-w-[88px] px-3 py-2 rounded-lg text-[15px] font-display tracking-wider uppercase transition-colors ${
+            className={`tap-target flex-1 min-w-[88px] px-3 py-2 rounded-sm text-[15px] font-display tracking-[0.18em] uppercase transition-colors ${
               isActive
                 ? 'bg-gradient-to-b from-ember-600 to-ember-700 text-ink-950 shadow-ember'
                 : 'text-bone/70 hover:text-ember-400'

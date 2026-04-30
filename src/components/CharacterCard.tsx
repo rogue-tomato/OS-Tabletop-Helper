@@ -7,15 +7,24 @@ type Props = {
 };
 
 export function CharacterCard({ character }: Props) {
+  // Prefer the dedicated cover/thumb. If the file does not exist, the
+  // PlaceholderImage error chain swaps to `art`, then to a text panel.
+  const primarySrc = character.listImage ?? character.art;
+  const fallbackSrc =
+    character.listImage && character.listImage !== character.art
+      ? character.art
+      : undefined;
+
   return (
     <Link
       to={`/character/${character.slug}`}
-      className="group panel overflow-hidden flex flex-col active:scale-[0.99] transition-transform"
+      className="group ornate-card overflow-hidden flex flex-col active:scale-[0.99] transition-transform"
       aria-label={`Open ${character.name}`}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-ink-800">
         <PlaceholderImage
-          src={character.art}
+          src={primarySrc}
+          fallbackSrc={fallbackSrc}
           alt={character.name}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           fallbackLabel={character.name}

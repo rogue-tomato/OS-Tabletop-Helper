@@ -1,129 +1,128 @@
 import { useMemo } from 'react';
-import type { Character } from '../types';
+import type { Ability, Character } from '../types';
+import { PlaceholderImage } from './PlaceholderImage';
 
 type Props = {
   character: Character;
 };
 
+function findCoreCard(character: Character): Ability | undefined {
+  // Cooldown 0 starter card. We rely on the cost string the adapter
+  // synthesises from the cooldown number ("Cooldown 0").
+  return character.abilities.find(
+    (a) => a.cost === 'Cooldown 0' || a.manualPlaceholder === true,
+  );
+}
+
 export function SummaryTab({ character }: Props) {
-  const { confirmed, placeholders } = useMemo(() => {
-    const c = [];
-    const p = [];
-    for (const a of character.abilities) {
-      if (a.manualPlaceholder) p.push(a);
-      else c.push(a);
-    }
-    return { confirmed: c, placeholders: p };
-  }, [character.abilities]);
+  const coreCard = useMemo(() => findCoreCard(character), [character]);
 
   return (
     <div className="space-y-4">
       <section className="panel p-4">
-        <h3 className="font-display text-ember-400 tracking-wider uppercase text-sm mb-2">
+        <h3 className="section-header font-display text-ember-400 tracking-wider uppercase text-sm">
           Special Ability
         </h3>
         <ul className="space-y-3">
           {character.specialAbility.map((sa) => (
             <li key={sa.title}>
               <p className="text-bone font-semibold">{sa.title}</p>
-              <p className="text-bone/85 text-[15px] mt-1 leading-relaxed">{sa.text}</p>
+              <p className="text-bone/85 text-[15px] mt-1 leading-relaxed">
+                {sa.text}
+              </p>
             </li>
           ))}
         </ul>
       </section>
 
       <section className="panel p-4">
-        <h3 className="font-display text-ember-400 tracking-wider uppercase text-sm mb-2">
+        <h3 className="section-header font-display text-ember-400 tracking-wider uppercase text-sm">
           Can Equip
         </h3>
-        <p className="text-bone/85 text-[15px] leading-relaxed">{character.canEquip}</p>
+        <p className="text-bone/85 text-[15px] leading-relaxed">
+          {character.canEquip}
+        </p>
       </section>
 
       <section className="panel p-4">
-        <h3 className="font-display text-ember-400 tracking-wider uppercase text-sm mb-2">
+        <h3 className="section-header font-display text-ember-400 tracking-wider uppercase text-sm">
           Playstyle
         </h3>
-        <p className="text-bone/85 text-[15px] leading-relaxed">{character.playstyle}</p>
+        <p className="text-bone/85 text-[15px] leading-relaxed">
+          {character.playstyle}
+        </p>
       </section>
-
-      {character.uniqueMechanics && character.uniqueMechanics.length > 0 ? (
-        <section className="panel p-4">
-          <h3 className="font-display text-ember-400 tracking-wider uppercase text-sm mb-2">
-            Unique Mechanics
-          </h3>
-          <ul className="list-disc pl-5 space-y-1.5 text-bone/85 text-[15px] leading-relaxed">
-            {character.uniqueMechanics.map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       <section className="panel p-4">
-        <h3 className="font-display text-ember-400 tracking-wider uppercase text-sm mb-3">
-          Level 1 Abilities
+        <h3 className="section-header font-display text-ember-400 tracking-wider uppercase text-sm">
+          CD 0 Core Card
         </h3>
-        {confirmed.length > 0 ? (
-          <ul className="space-y-2.5">
-            {confirmed.map((a) => (
-              <li
-                key={a.id}
-                className="flex items-start justify-between gap-3 border-b border-ember-700/10 last:border-b-0 pb-2.5 last:pb-0"
-              >
-                <div className="min-w-0">
-                  <p className="text-bone font-medium leading-snug">{a.name}</p>
-                  <p className="text-bone/70 text-sm mt-0.5 leading-relaxed">{a.summary}</p>
-                </div>
-                {a.cost ? (
-                  <span className="shrink-0 text-[12px] font-display tracking-wide uppercase text-ember-400/90 bg-ember-700/15 border border-ember-700/30 rounded-md px-2 py-1">
-                    {a.cost}
-                  </span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-bone/70 text-[15px] italic">
-            No verified Level 1 cards yet.
-          </p>
-        )}
+        {coreCard ? <CoreCardTile ability={coreCard} /> : <NoCoreCardNote />}
       </section>
-
-      {placeholders.length > 0 ? (
-        <section className="rounded-2xl border-2 border-dashed border-ember-700/50 bg-ink-900/40 p-4">
-          <h3 className="font-display text-amber-300/90 tracking-wider uppercase text-sm mb-1">
-            Missing Cards
-          </h3>
-          <p className="text-bone/70 text-[14px] leading-relaxed mb-3">
-            These slots are known to exist in the printed game but are not
-            transcribed in any of the captured sources yet. Fill them via
-            <code className="mx-1 px-1 py-0.5 rounded bg-ink-800/70 text-bone/80 text-[12px]">
-              src/data/manualAbilityFillTemplate.ts
-            </code>
-            and reload.
-          </p>
-          <ul className="space-y-2.5">
-            {placeholders.map((a) => (
-              <li
-                key={a.id}
-                className="flex items-start justify-between gap-3 border-t border-ember-700/15 first:border-t-0 pt-2.5 first:pt-0"
-              >
-                <div className="min-w-0">
-                  <p className="text-bone font-medium leading-snug">{a.name}</p>
-                  <p className="text-amber-300/80 text-sm mt-0.5 italic leading-relaxed">
-                    Manual placeholder — needs source
-                  </p>
-                </div>
-                {a.cost ? (
-                  <span className="shrink-0 text-[12px] font-display tracking-wide uppercase text-amber-300/90 bg-amber-700/10 border border-amber-500/30 rounded-md px-2 py-1">
-                    {a.cost}
-                  </span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
     </div>
+  );
+}
+
+function CoreCardTile({ ability }: { ability: Ability }) {
+  if (ability.manualPlaceholder) {
+    return (
+      <div className="rounded-md border-2 border-dashed border-ember-700/50 bg-ink-900/40 overflow-hidden flex flex-col sm:flex-row">
+        <div className="relative aspect-[3/4] sm:w-48 sm:flex-shrink-0 flex items-center justify-center bg-ink-800/40 [background-image:repeating-linear-gradient(45deg,_rgba(245,200,120,0.05)_0,_rgba(245,200,120,0.05)_8px,_transparent_8px,_transparent_16px)]">
+          <div className="text-center px-4">
+            <p className="font-display tracking-widest uppercase text-ember-400/85 text-[13px] leading-snug">
+              {ability.name}
+            </p>
+            <p className="mt-2 text-bone/70 text-[13px] leading-snug italic">
+              Manual placeholder — needs source
+            </p>
+          </div>
+        </div>
+        <div className="p-3 sm:p-4 border-t sm:border-t-0 sm:border-l border-ember-700/20 flex-1">
+          <p className="text-bone font-medium text-[15px] leading-snug">
+            {ability.name}
+          </p>
+          <p className="text-amber-300/80 text-[13px] mt-0.5 italic">
+            Manual placeholder · needs source
+          </p>
+          {ability.cardImage ? (
+            <p className="mt-3 text-[11px] text-bone/55 break-all font-mono leading-snug">
+              Drop image at: {ability.cardImage}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-md border border-ember-700/30 bg-ink-900/60 overflow-hidden flex flex-col sm:flex-row">
+      <div className="relative aspect-[3/4] sm:w-48 sm:flex-shrink-0 bg-ink-800">
+        <PlaceholderImage
+          src={ability.cardImage}
+          alt={ability.name}
+          className="absolute inset-0 h-full w-full object-contain p-2"
+          fallbackLabel={ability.name}
+        />
+      </div>
+      <div className="p-3 sm:p-4 border-t sm:border-t-0 sm:border-l border-ember-700/20 flex-1">
+        <p className="text-bone font-medium text-[16px] leading-snug">
+          {ability.name}
+        </p>
+        {ability.cost ? (
+          <p className="text-bone/60 text-[13px] mt-0.5">{ability.cost}</p>
+        ) : null}
+        <p className="text-bone/85 text-[14px] mt-2 leading-relaxed">
+          {ability.summary}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function NoCoreCardNote() {
+  return (
+    <p className="text-bone/70 text-[15px] italic leading-relaxed">
+      This character has no single cooldown-0 starter card — see the Cards tab
+      for the starting pool.
+    </p>
   );
 }

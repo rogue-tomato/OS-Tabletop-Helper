@@ -159,7 +159,12 @@ src/
   main.tsx                 # entry, HashRouter, Telegram WebApp init
   index.css                # Tailwind layers + theme tokens
   types.ts                 # Character / Ability / SpecialAbility types
-  data/characters.ts       # all 12 characters (canonical seed)
+  data/oathswornCanonicalDb.ts        # source-of-truth character/ability data
+  data/characterMetadata.ts           # listImage, hero focal, search tags (per-slug)
+  data/levelGates.ts                  # which card-tab levels are revealed
+  data/manualAbilityFillTemplate.ts   # manual fill entries for missing cards
+  data/applyManualAbilityOverrides.ts # the override loader
+  data/characters.ts                  # legacy adapter; the UI imports from here
   lib/assets.ts            # asset URL helper that respects vite base
   components/
     Layout.tsx             # header + safe-area wrapper
@@ -169,17 +174,20 @@ src/
     EmptyState.tsx
     Tabs.tsx
     SummaryTab.tsx
-    AbilitiesTab.tsx
     CardsTab.tsx
     LoreTab.tsx
-    CardLightbox.tsx
+    ArtLightbox.tsx        # full-screen hero art view
+    CardLightbox.tsx       # full-screen ability card view
     PlaceholderImage.tsx
   pages/
     HomePage.tsx
     CharacterPage.tsx
 public/
-  characters/<slug>/art.{jpg,jpeg,png}
-  characters/<slug>/cards/{01..07}.png
+  characters/<slug>/art.{jpg,jpeg,png}        # large hero
+  characters/<slug>/cover.jpg                 # optional list thumbnail
+  characters/<slug>/cards/<NN>_<slug>.png     # level-1 card images
+  characters/<slug>/cards/level-{2,5,10,15}/<NN>_<slug>.png
+  card-gallery.html        # static QA gallery for verifying card images
 ```
 
 ## Editing character data
@@ -260,3 +268,90 @@ already filled in for you.
   `fillCooldown` is per-round position, not unlock level).
 * Card names are never inferred. If you don't have a verified name,
   leave the entry empty — the placeholder stays visible until you do.
+
+## Common content updates
+
+These are the small files you'll touch most often as the campaign
+progresses. None of them require touching React component code.
+
+### List page thumbnails
+
+A character can have a dedicated cover image used on the list page
+(square-ish framing of the figure looks best). The adapter automatically
+looks for `public/characters/<slug>/cover.jpg`:
+
+* If you drop a `cover.jpg` into the slug folder, the list card will use
+  it; the original `art.<ext>` keeps powering the full-screen hero.
+* If no cover exists, the list card transparently falls back to `art`.
+* To use a different filename or extension, set
+  `listImage: 'characters/<slug>/<filename>'` in
+  [`src/data/characterMetadata.ts`](src/data/characterMetadata.ts).
+
+### Hero focal points (mobile / desktop)
+
+Edit
+[`src/data/characterMetadata.ts`](src/data/characterMetadata.ts) to
+change how a character's hero crops:
+
+```ts
+'thracian-blade': {
+  heroObjectPositionMobile: '40% center',
+  heroObjectPositionDesktop: 'center center',
+},
+```
+
+Defaults if you don't set anything: mobile `25% center` (biased toward
+the left of the artwork so the figure stays visible on phones), desktop
+`center center`. The Exile already opts out of the left bias because of
+its specific composition.
+
+### Search tags (hidden — not shown in UI)
+
+Same metadata file:
+
+```ts
+warden: {
+  searchTags: ['inquisitor', 'tank', 'shield', 'chain', 'taunt'],
+},
+```
+
+These widen what the home-page search box matches. The visible search
+haystack already includes name, role, playstyle, ability names, and
+`canEquip` text — so "bow" already finds the Ranger and Huntress without
+any tag, and "Taunt" already finds the Warden via the ability list.
+`searchTags` is for synonyms that wouldn't otherwise match (e.g.
+"summoner" → Grove Maiden, "noble" → Huntress).
+
+### Unlocking card sections by chapter
+
+Card-tab progression sections (Level 2 / 5 / 10 / 15) start sealed and
+show a "Unlock Chapter II to view" banner. Edit
+[`src/data/levelGates.ts`](src/data/levelGates.ts) to:
+
+* unlock a level for **everyone** — flip `revealed: true` on the
+  matching key in `defaultLevelGates`,
+* unlock a level for **one character only** — add to
+  `perCharacterOverrides`:
+
+```ts
+export const perCharacterOverrides = {
+  warden: { 2: { revealed: true } },
+};
+```
+
+You can also customise the locked-message string per level (e.g. switch
+"Chapter II" wording when the campaign uses different chapter names).
+
+### Adding real cards under a higher level
+
+When you have card images for L2/5/10/15:
+
+1. Drop the PNGs at
+   `public/characters/<slug>/cards/level-<N>/<NN>_<slug>.png` (the
+   adapter already auto-builds these paths from the canonical DB).
+2. Confirm the ability's `cardImage` path matches in
+   `oathswornCanonicalDb.ts` — for the abilities marked
+   `cardImage: null` in the canonical DB, the adapter falls back to a
+   non-existent placeholder file. Set the path explicitly when you have
+   a real image.
+3. Flip the matching gate in `levelGates.ts` to `revealed: true`.

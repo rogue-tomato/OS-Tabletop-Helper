@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { assetUrl } from '../lib/assets';
 
 type Props = {
   src: string;
+  /** Optional secondary src tried after the primary fails. Lets the
+   *  caller chain e.g. cover → art before showing the text fallback. */
+  fallbackSrc?: string;
   alt: string;
   className?: string;
   fallbackLabel?: string;
@@ -11,12 +14,22 @@ type Props = {
 
 export function PlaceholderImage({
   src,
+  fallbackSrc,
   alt,
   className,
   fallbackLabel,
   loading = 'lazy',
 }: Props) {
+  const [currentSrc, setCurrentSrc] = useState(src);
   const [errored, setErrored] = useState(false);
+
+  // If the parent passes a different `src` (e.g. swapping characters),
+  // reset the chain.
+  useEffect(() => {
+    setCurrentSrc(src);
+    setErrored(false);
+  }, [src, fallbackSrc]);
+
   if (errored) {
     return (
       <div
@@ -31,11 +44,17 @@ export function PlaceholderImage({
   }
   return (
     <img
-      src={assetUrl(src)}
+      src={assetUrl(currentSrc)}
       alt={alt}
       loading={loading}
       decoding="async"
-      onError={() => setErrored(true)}
+      onError={() => {
+        if (fallbackSrc && currentSrc !== fallbackSrc) {
+          setCurrentSrc(fallbackSrc);
+        } else {
+          setErrored(true);
+        }
+      }}
       className={className}
     />
   );
