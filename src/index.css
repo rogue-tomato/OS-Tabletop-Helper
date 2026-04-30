@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply font-body text-bone bg-ink-950 antialiased;
+    font-size: 16px;
+    line-height: 1.5;
+    background-image:
+      radial-gradient(ellipse at 20% -10%, rgba(201, 133, 56, 0.18), transparent 55%),
+      radial-gradient(ellipse at 90% 110%, rgba(80, 30, 90, 0.18), transparent 55%);
+    background-attachment: fixed;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-wide;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-ember-700/30 bg-ink-900/70 backdrop-blur-md shadow-lg;
+  }
+  .panel-soft {
+    @apply rounded-2xl border border-ember-700/20 bg-ink-900/50 backdrop-blur-sm;
+  }
+  .ember-text {
+    @apply text-ember-400;
+  }
+  .gold-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-ember-600/60 to-transparent;
+  }
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hidden {
+    scrollbar-width: none;
+  }
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
