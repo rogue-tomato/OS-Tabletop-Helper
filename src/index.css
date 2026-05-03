@@ -27,11 +27,18 @@
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  /* Fixed full-viewport backdrop. Sits behind every layer (z-index
-     -1) and never scrolls or resizes with the document. */
+  /* Fixed full-viewport backdrop. Pinned to the LARGE viewport
+     dimensions (`100lvh`) so iOS Safari doesn't shrink/scale it when
+     the on-screen keyboard appears. `100vh` is the fallback for
+     browsers without `lvh` units. Sits behind every layer (z-index
+     -1) and never scrolls with the document. */
   .app-bg {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100lvh;
     z-index: -1;
     background-image: var(--forest-bg-url);
     background-size: cover;

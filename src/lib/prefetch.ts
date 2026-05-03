@@ -43,31 +43,48 @@ export function prefetchImageOnce(
   return link;
 }
 
-// Force-loads an image into the browser's HTTP cache by instantiating
-// a real <Image>. Unlike <link rel="prefetch"> (low-priority), this
-// runs at the same priority as a normal <img src=...> would — so the
-// browser doesn't defer it indefinitely behind the main bundle. We
-// keep references in a module-level Set to defeat GC until the image
-// has finished loading.
+// Throttled image preloader.
+//
+// Instantiates real <Image>s so the browser fetches them at normal
+// image priority (vs. the low-priority `<link rel="prefetch">` it
+// likes to defer). To avoid blasting the network with 200+
+// simultaneous requests on home mount — which on slow desktop
+// connections froze the whole list — we cap concurrency to 6, the
+// HTTP/1.1 per-origin connection limit. Items beyond the cap wait
+// in a FIFO queue and start as earlier loads finish.
 const inFlight = new Set<HTMLImageElement>();
 const loaded = new Set<string>();
+const queue: string[] = [];
+let active = 0;
+const MAX_CONCURRENT = 6;
+
+function pump() {
+  while (active < MAX_CONCURRENT && queue.length > 0) {
+    const href = queue.shift() as string;
+    active += 1;
+    const img = new Image();
+    inFlight.add(img);
+    const release = () => {
+      inFlight.delete(img);
+      active -= 1;
+      pump();
+    };
+    img.onload = release;
+    img.onerror = release;
+    (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority =
+      'high';
+    img.decoding = 'async';
+    img.src = href;
+  }
+}
 
 export function preloadImageEager(href: string | undefined | null): void {
   if (!href) return;
   if (typeof Image === 'undefined') return;
   if (loaded.has(href)) return;
   loaded.add(href);
-  const img = new Image();
-  inFlight.add(img);
-  const release = () => inFlight.delete(img);
-  img.onload = release;
-  img.onerror = release;
-  // Hint the browser this is high priority. `fetchPriority` is on the
-  // Image interface in modern browsers; older ones just ignore it.
-  (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority =
-    'high';
-  img.decoding = 'async';
-  img.src = href;
+  queue.push(href);
+  pump();
 }
 
 type IdleHandle = { cancel: () => void };
