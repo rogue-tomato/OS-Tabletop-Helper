@@ -11,8 +11,9 @@ type Props = {
   className?: string;
 };
 
-const FILLED = '★';
-const EMPTY = '☆';
+// Four-pointed glyphs (BLACK / WHITE FOUR POINTED STAR, U+2726 / U+2727).
+const FILLED = '✦';
+const EMPTY = '✧';
 
 export function ComplexityStars({
   rating,
@@ -20,15 +21,18 @@ export function ComplexityStars({
   className = '',
 }: Props) {
   if (!rating) return null;
-  const sizeClass = size === 'hero' ? 'text-[15px]' : 'text-[12px]';
+  const sizeClass = size === 'hero' ? 'text-[18px]' : 'text-[14px]';
+  // Stand-alone (no chip): rely on a strong dark text-shadow so the
+  // glyphs remain legible directly against busy art.
   return (
     <span
       role="img"
       aria-label={`Complexity ${rating} out of 5`}
-      className={`${sizeClass} font-display tracking-[0.05em] text-accent leading-none whitespace-nowrap ${className}`}
+      className={`${sizeClass} tracking-[0.1em] leading-none whitespace-nowrap drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] ${className}`}
+      style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.7)' }}
     >
       <span className="text-accent">{FILLED.repeat(rating)}</span>
-      <span className="text-accent/30">{EMPTY.repeat(5 - rating)}</span>
+      <span className="text-accent/40">{EMPTY.repeat(5 - rating)}</span>
     </span>
   );
 }

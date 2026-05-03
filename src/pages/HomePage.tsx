@@ -3,12 +3,60 @@ import { Layout } from '../components/Layout';
 import { SearchInput } from '../components/SearchInput';
 import { CharacterList } from '../components/CharacterList';
 import { EmptyState } from '../components/EmptyState';
+import { SortMenu, type SortMode } from '../components/SortMenu';
 import { characters } from '../data/characters';
-import { assetUrl, mediumUrl } from '../lib/assets';
-import { prefetchImageOnce, scheduleIdle } from '../lib/prefetch';
+import { assetUrl, mediumUrl, thumbUrl } from '../lib/assets';
+import { prefetchImageOnce } from '../lib/prefetch';
 import type { Character } from '../types';
 
 const SCROLL_KEY = 'home-scroll-y';
+const SORT_KEY = 'home-sort-mode';
+
+function loadSavedSort(): SortMode {
+  if (typeof window === 'undefined') return 'alpha-asc';
+  const saved = window.localStorage.getItem(SORT_KEY);
+  if (
+    saved === 'complexity-desc' ||
+    saved === 'complexity-asc' ||
+    saved === 'alpha-asc' ||
+    saved === 'alpha-desc'
+  ) {
+    return saved;
+  }
+  return 'alpha-asc';
+}
+
+function listLabel(c: Character): string {
+  return c.listName ?? c.name;
+}
+
+function applySort(list: Character[], mode: SortMode): Character[] {
+  const sorted = [...list];
+  switch (mode) {
+    case 'complexity-desc':
+      sorted.sort(
+        (a, b) =>
+          (b.complexity ?? 0) - (a.complexity ?? 0) ||
+          listLabel(a).localeCompare(listLabel(b)),
+      );
+      break;
+    case 'complexity-asc':
+      sorted.sort(
+        (a, b) =>
+          (a.complexity ?? 0) - (b.complexity ?? 0) ||
+          listLabel(a).localeCompare(listLabel(b)),
+      );
+      break;
+    case 'alpha-desc':
+      sorted.sort((a, b) => listLabel(b).localeCompare(listLabel(a)));
+      break;
+    case 'alpha-asc':
+    default:
+      sorted.sort((a, b) => listLabel(a).localeCompare(listLabel(b)));
+      break;
+  }
+  return sorted;
+}
 
 // Builds a single lowercase haystack per character that the search box
 // queries against. New strings added here are searchable immediately —
@@ -32,12 +80,24 @@ const haystackBySlug: Record<string, string> = Object.fromEntries(
 
 export function HomePage() {
   const [query, setQuery] = useState('');
+  const [sortMode, setSortMode] = useState<SortMode>(() => loadSavedSort());
+
+  const onSortChange = (next: SortMode) => {
+    setSortMode(next);
+    try {
+      window.localStorage.setItem(SORT_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return characters;
-    return characters.filter((c) => haystackBySlug[c.slug].includes(q));
-  }, [query]);
+    const base = q
+      ? characters.filter((c) => haystackBySlug[c.slug].includes(q))
+      : characters;
+    return applySort(base, sortMode);
+  }, [query, sortMode]);
 
   // Restore the previous list-scroll position on mount (e.g. when the
   // user hits Back from a character page). useLayoutEffect runs before
@@ -65,43 +125,49 @@ export function HomePage() {
     };
   }, []);
 
-  // Warm the cache for every character's PREVIEW hero variant after
-  // idle. We pick mobile vs desktop variant once at idle time based on
-  // the current viewport — so a phone never burns bandwidth on
-  // landscape desktop crops, and vice versa. Falls back through
-  // heroArtDesktop → mediumUrl(art) when explicit variants aren't
-  // configured. Full-resolution lightbox sources are NOT prefetched
-  // here (would be wasteful for 12 characters); CharacterPage
-  // prefetches the full variant for its own character on mount.
+  // Eager full-cache warm: on first home mount, kick off prefetch for
+  // every character's hero variants (both viewport sizes) PLUS every
+  // revealed-level card thumbnail. The Service Worker (sw.js) catches
+  // each fetched response and stores it in a long-lived cache, so any
+  // subsequent navigation paints from cache without round-trips. We
+  // skip the idle wait — the user explicitly asked to warm everything
+  // up-front rather than dribble it in during interaction.
   useEffect(() => {
-    const handle = scheduleIdle(() => {
-      const isDesktop =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(min-width: 640px)').matches;
-      for (const c of characters) {
-        const desktopSrc = c.heroArtDesktop ?? mediumUrl(c.art);
-        const mobileSrc = c.heroArtMobile ?? desktopSrc;
-        const primary = isDesktop ? desktopSrc : mobileSrc;
-        prefetchImageOnce(assetUrl(primary));
-        // Warm the other viewport variant too so a resize across the
-        // 768px breakpoint never hits a cold fetch. dedups if same URL.
-        const secondary = isDesktop ? mobileSrc : desktopSrc;
-        if (secondary !== primary) {
-          prefetchImageOnce(assetUrl(secondary));
-        }
+    for (const c of characters) {
+      const desktopSrc = c.heroArtDesktop ?? mediumUrl(c.art);
+      const mobileSrc = c.heroArtMobile ?? desktopSrc;
+      prefetchImageOnce(assetUrl(desktopSrc));
+      if (mobileSrc !== desktopSrc) {
+        prefetchImageOnce(assetUrl(mobileSrc));
       }
-    });
-    return () => handle.cancel();
+      // List-tile cover thumb (already eager-loaded as <img> for the
+      // first 6, but prefetch dedups so this is free).
+      const cover = c.listImage ?? c.art;
+      prefetchImageOnce(assetUrl(thumbUrl(cover)));
+
+      // Card thumbs for revealed levels of this character. Hidden
+      // levels are skipped (Level 2 is hidden right now).
+      const allCards = [...c.abilities, ...(c.unlockedAbilities ?? [])];
+      for (const a of allCards) {
+        const thumb = a.cardImageThumb ?? thumbUrl(a.cardImage);
+        prefetchImageOnce(assetUrl(thumb));
+      }
+    }
   }, []);
 
   return (
     <Layout title="Free Company Recruits">
       <div className="space-y-4">
-        <SearchInput
-          value={query}
-          onChange={setQuery}
-          placeholder="Search by name, role, ability, or weapon…"
-        />
+        <div className="flex items-stretch gap-2">
+          <SortMenu value={sortMode} onChange={onSortChange} />
+          <div className="flex-1 min-w-0">
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Search by name, role, ability, or weapon…"
+            />
+          </div>
+        </div>
         {filtered.length > 0 ? (
           <CharacterList characters={filtered} />
         ) : (

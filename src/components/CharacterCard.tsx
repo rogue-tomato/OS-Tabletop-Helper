@@ -37,12 +37,11 @@ export function CharacterCard({ character, eager = false }: Props) {
           fallbackLabel={character.name}
         />
         {character.complexity ? (
-          <span
-            aria-hidden="true"
-            className="absolute top-2 right-2 inline-flex items-center px-1.5 py-0.5 bg-ink-950/70 backdrop-blur-sm border border-ember-700/40 pointer-events-none"
-          >
-            <ComplexityStars rating={character.complexity} size="tile" />
-          </span>
+          <ComplexityStars
+            rating={character.complexity}
+            size="tile"
+            className="absolute top-2 left-2 pointer-events-none z-10"
+          />
         ) : null}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink-950 via-ink-950/85 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-3">

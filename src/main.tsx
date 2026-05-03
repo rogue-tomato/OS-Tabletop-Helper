@@ -43,6 +43,21 @@ if ('scrollRestoration' in window.history) {
   window.history.scrollRestoration = 'manual';
 }
 
+// Service Worker — cache-first for assets, stale-while-revalidate for
+// the HTML shell. This is what makes second-and-subsequent loads
+// instant (and survives offline once the initial visit has cached
+// everything HomePage prefetches). Registered after window.load so it
+// doesn't compete with first paint.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    const swUrl = `${import.meta.env.BASE_URL}sw.js`;
+    navigator.serviceWorker.register(swUrl).catch(() => {
+      // Some hosts (Telegram WebApp inside older clients) don't allow
+      // SW registration — that's fine, we degrade to no caching.
+    });
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
