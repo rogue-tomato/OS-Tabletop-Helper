@@ -13,14 +13,7 @@ export function SearchInput({ value, onChange, placeholder }: Props) {
     // intercept submit so the form never actually navigates.
     <form
       role="search"
-      onSubmit={(e) => {
-        // Stop the browser from doing a real form navigation. We
-        // deliberately don't `blur()` the input here — on iOS that
-        // triggered an extra zoom-out animation when the keyboard
-        // collapsed after pressing Search/Go. Tap-outside dismisses
-        // the keyboard naturally.
-        e.preventDefault();
-      }}
+      onSubmit={(e) => e.preventDefault()}
       className="block"
     >
       <label className="block">
@@ -49,6 +42,19 @@ export function SearchInput({ value, onChange, placeholder }: Props) {
           spellCheck="false"
           value={value}
           onChange={(e) => onChange(e.currentTarget.value)}
+          onKeyDown={(e) => {
+            // Dismiss the on-screen keyboard when Search/Go/Enter is
+            // pressed. We do this on keydown (not in the form's
+            // onSubmit) because on iOS submit-time blur was racing
+            // with the Visual Viewport restore animation and ended
+            // up looking like a zoom-out. preventDefault stops the
+            // implicit form submission that would otherwise fire
+            // afterwards.
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              (e.currentTarget as HTMLInputElement).blur();
+            }
+          }}
           placeholder={placeholder ?? 'Search characters…'}
           className="w-full h-12 rounded-none bg-ink-800/70 border border-ember-700/30 pl-10 pr-4 text-base text-bone placeholder:text-bone/40 focus:outline-none focus:border-ember-500 focus:ring-2 focus:ring-ember-500/30"
         />
