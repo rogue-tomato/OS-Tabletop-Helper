@@ -43,6 +43,33 @@ export function prefetchImageOnce(
   return link;
 }
 
+// Force-loads an image into the browser's HTTP cache by instantiating
+// a real <Image>. Unlike <link rel="prefetch"> (low-priority), this
+// runs at the same priority as a normal <img src=...> would — so the
+// browser doesn't defer it indefinitely behind the main bundle. We
+// keep references in a module-level Set to defeat GC until the image
+// has finished loading.
+const inFlight = new Set<HTMLImageElement>();
+const loaded = new Set<string>();
+
+export function preloadImageEager(href: string | undefined | null): void {
+  if (!href) return;
+  if (typeof Image === 'undefined') return;
+  if (loaded.has(href)) return;
+  loaded.add(href);
+  const img = new Image();
+  inFlight.add(img);
+  const release = () => inFlight.delete(img);
+  img.onload = release;
+  img.onerror = release;
+  // Hint the browser this is high priority. `fetchPriority` is on the
+  // Image interface in modern browsers; older ones just ignore it.
+  (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority =
+    'high';
+  img.decoding = 'async';
+  img.src = href;
+}
+
 type IdleHandle = { cancel: () => void };
 
 // Defers work until the browser is idle. Falls back to a small

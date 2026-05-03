@@ -6,11 +6,16 @@ export type SortMode =
   | 'alpha-asc'
   | 'alpha-desc';
 
+// Order matches the user's spec exactly:
+//   1. complexity ascending (default)
+//   2. complexity descending
+//   3. alphabetical ascending
+//   4. alphabetical descending
 const OPTIONS: { id: SortMode; label: string }[] = [
+  { id: 'complexity-asc', label: 'Complexity ↑' },
+  { id: 'complexity-desc', label: 'Complexity ↓' },
   { id: 'alpha-asc', label: 'A → Z' },
   { id: 'alpha-desc', label: 'Z → A' },
-  { id: 'complexity-desc', label: 'Complexity ↓' },
-  { id: 'complexity-asc', label: 'Complexity ↑' },
 ];
 
 type Props = {

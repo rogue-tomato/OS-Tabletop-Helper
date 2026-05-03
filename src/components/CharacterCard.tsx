@@ -40,7 +40,7 @@ export function CharacterCard({ character, eager = false }: Props) {
           <ComplexityStars
             rating={character.complexity}
             size="tile"
-            className="absolute top-2 left-2 pointer-events-none z-10"
+            className="absolute top-2 right-2 pointer-events-none z-10"
           />
         ) : null}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink-950 via-ink-950/85 to-transparent" />

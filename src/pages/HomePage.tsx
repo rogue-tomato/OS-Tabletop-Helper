@@ -6,14 +6,17 @@ import { EmptyState } from '../components/EmptyState';
 import { SortMenu, type SortMode } from '../components/SortMenu';
 import { characters } from '../data/characters';
 import { assetUrl, mediumUrl, thumbUrl } from '../lib/assets';
-import { prefetchImageOnce } from '../lib/prefetch';
+import { preloadImageEager } from '../lib/prefetch';
 import type { Character } from '../types';
 
 const SCROLL_KEY = 'home-scroll-y';
 const SORT_KEY = 'home-sort-mode';
 
 function loadSavedSort(): SortMode {
-  if (typeof window === 'undefined') return 'alpha-asc';
+  // Default is "complexity ascending" — easiest characters first, so a
+  // new player lands on Ranger / Exile rather than Witch on first
+  // visit. Choices persist in localStorage once the user picks one.
+  if (typeof window === 'undefined') return 'complexity-asc';
   const saved = window.localStorage.getItem(SORT_KEY);
   if (
     saved === 'complexity-desc' ||
@@ -23,7 +26,7 @@ function loadSavedSort(): SortMode {
   ) {
     return saved;
   }
-  return 'alpha-asc';
+  return 'complexity-asc';
 }
 
 function listLabel(c: Character): string {
@@ -125,32 +128,34 @@ export function HomePage() {
     };
   }, []);
 
-  // Eager full-cache warm: on first home mount, kick off prefetch for
-  // every character's hero variants (both viewport sizes) PLUS every
-  // revealed-level card thumbnail. The Service Worker (sw.js) catches
-  // each fetched response and stores it in a long-lived cache, so any
-  // subsequent navigation paints from cache without round-trips. We
-  // skip the idle wait — the user explicitly asked to warm everything
-  // up-front rather than dribble it in during interaction.
+  // Aggressive cache warm: on first home mount, force-fetch every
+  // character's hero variants (both viewport sizes) + every cover
+  // thumb + every revealed card thumb via real <Image> instantiation.
+  // Unlike <link rel="prefetch">, this runs at normal image priority
+  // so the browser doesn't defer it behind the main bundle. The
+  // Service Worker (sw.js) catches each response and stores it in a
+  // long-lived cache, so subsequent character / lightbox openings
+  // paint instantly from cache.
   useEffect(() => {
     for (const c of characters) {
       const desktopSrc = c.heroArtDesktop ?? mediumUrl(c.art);
       const mobileSrc = c.heroArtMobile ?? desktopSrc;
-      prefetchImageOnce(assetUrl(desktopSrc));
+      preloadImageEager(assetUrl(desktopSrc));
       if (mobileSrc !== desktopSrc) {
-        prefetchImageOnce(assetUrl(mobileSrc));
+        preloadImageEager(assetUrl(mobileSrc));
       }
-      // List-tile cover thumb (already eager-loaded as <img> for the
-      // first 6, but prefetch dedups so this is free).
       const cover = c.listImage ?? c.art;
-      prefetchImageOnce(assetUrl(thumbUrl(cover)));
+      preloadImageEager(assetUrl(thumbUrl(cover)));
 
-      // Card thumbs for revealed levels of this character. Hidden
-      // levels are skipped (Level 2 is hidden right now).
+      // Card thumbs for the current character (revealed levels only —
+      // hidden levels like Level 2 are skipped automatically because
+      // their abilities are still in `unlockedAbilities`, but we don't
+      // gate by `levelGates` here on purpose so all transcribed cards
+      // get into the SW cache).
       const allCards = [...c.abilities, ...(c.unlockedAbilities ?? [])];
       for (const a of allCards) {
         const thumb = a.cardImageThumb ?? thumbUrl(a.cardImage);
-        prefetchImageOnce(assetUrl(thumb));
+        preloadImageEager(assetUrl(thumb));
       }
     }
   }, []);

@@ -86,13 +86,14 @@
   }
   /* Hover behaviour for the character grid: the inner art zooms in
      while the tile box stays put (so neighbours never overlap). The
-     other tiles dim slightly to focus attention. Pointer-only. */
+     other tiles DARKEN (filter: brightness) instead of fading — fading
+     read as "transparent" against the page bg. Pointer-only. */
   @media (hover: hover) and (pointer: fine) {
     .character-list > a {
-      transition: opacity 220ms ease;
+      transition: filter 220ms ease;
     }
     .character-list:has(> a:hover) > a:not(:hover) {
-      opacity: 0.7;
+      filter: brightness(0.45);
     }
   }
   /* Section titles inside panels — adds a thin silver-sage underline
