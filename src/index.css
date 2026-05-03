@@ -8,7 +8,7 @@
     /* Fallback in case main.tsx hasn't injected the resolved BASE_URL
        version yet (e.g. very first paint). The runtime override picks
        up vite's BASE_URL so it works under GH Pages too. */
-    --forest-bg-url: url(/forest-bg.webp);
+    --forest-bg-url: url(/forest-bg.jpg);
   }
   html,
   body,
@@ -25,9 +25,19 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    /* Mobile browsers (iOS Safari especially) glitch when
+       background-attachment: fixed scales below content that changes
+       height — they re-rasterise the bg every paint, which read as
+       flicker behind the tab content. Pin to scroll on small
+       viewports; keep fixed only on real desktop. */
+    background-attachment: scroll;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  @media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+    body {
+      background-attachment: fixed;
+    }
   }
   h1,
   h2,
@@ -84,9 +94,16 @@
     border-bottom: 1px solid rgba(194, 209, 203, 0.6);
     border-right: 1px solid rgba(194, 209, 203, 0.6);
   }
-  /* Hover behaviour for the character grid: just the inner-image
-     zoom (handled by `group-hover:scale-[1.2]` in CharacterCard).
-     Siblings stay untouched. */
+  /* Hover behaviour for the character grid: zoom the inner art only
+     on real pointer devices. Mobile browsers fire :hover on touch /
+     scroll, which previously made the cover punch in mid-scroll —
+     that's why it's gated behind `(hover: hover) and (pointer: fine)`
+     instead of Tailwind's `group-hover:` (which has no media gate). */
+  @media (hover: hover) and (pointer: fine) {
+    .character-list a:hover .cover-art {
+      transform: scale(1.2);
+    }
+  }
   /* Section titles inside panels — adds a thin silver-sage underline
      that fades out, plus a leading diamond marker. */
   .section-header {

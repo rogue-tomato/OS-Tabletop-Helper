@@ -11,7 +11,7 @@ type Props = {
 export function Layout({ children, showBack, title }: Props) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-30 backdrop-blur-md bg-ink-950/70 border-b border-ember-700/20">
+      <header className="sticky top-0 z-30 bg-ink-950/85 border-b border-ember-700/20">
         <div className="mx-auto max-w-screen-md px-4 flex items-center gap-3 min-h-[60px]">
           {showBack ? (
             <Link

@@ -33,7 +33,7 @@ export function CharacterCard({ character, eager = false }: Props) {
           fallbackSrc={fallbackSrc}
           alt={character.name}
           loading={eager ? 'eager' : 'lazy'}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.2]"
+          className="cover-art absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out"
           fallbackLabel={character.name}
         />
         {character.complexity ? (

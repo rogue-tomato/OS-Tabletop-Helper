@@ -34,7 +34,7 @@ if (tg) {
 // dev (base=/) and GitHub Pages (base=/<repo>/).
 document.documentElement.style.setProperty(
   '--forest-bg-url',
-  `url(${import.meta.env.BASE_URL}forest-bg.webp)`,
+  `url(${import.meta.env.BASE_URL}forest-bg.jpg)`,
 );
 
 // HashRouter doesn't manage scroll, and the browser default ('auto')

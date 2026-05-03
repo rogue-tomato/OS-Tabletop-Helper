@@ -36,15 +36,37 @@ export function CardLightbox({ abilities, startIndex, onClose }: Props) {
   }, []);
 
   const onTouchStart = (e: React.TouchEvent) => {
+    // Only track 1-finger swipes. Pinch-zoom (>=2 fingers) must NOT
+    // be treated as a swipe — otherwise zooming the card flipped to
+    // the next/previous one as the user spread fingers apart.
+    if (e.touches.length !== 1) {
+      touchStartX.current = null;
+      touchDeltaX.current = 0;
+      return;
+    }
     touchStartX.current = e.touches[0].clientX;
     touchDeltaX.current = 0;
   };
   const onTouchMove = (e: React.TouchEvent) => {
+    // Cancel any in-progress swipe the moment a second finger lands —
+    // user has switched intent from "swipe" to "pinch".
+    if (e.touches.length !== 1) {
+      touchStartX.current = null;
+      touchDeltaX.current = 0;
+      return;
+    }
     if (touchStartX.current === null) return;
     touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
   };
-  const onTouchEnd = () => {
+  const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
+    // If any fingers are still down (pinch lift one then the other),
+    // don't trigger navigation.
+    if (e.touches.length !== 0) {
+      touchStartX.current = null;
+      touchDeltaX.current = 0;
+      return;
+    }
     if (touchDeltaX.current > SWIPE_THRESHOLD) goPrev();
     else if (touchDeltaX.current < -SWIPE_THRESHOLD) goNext();
     touchStartX.current = null;

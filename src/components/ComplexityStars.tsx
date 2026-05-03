@@ -22,7 +22,10 @@ export function ComplexityStars({
   className = '',
 }: Props) {
   if (!rating) return null;
-  const sizeClass = size === 'hero' ? 'text-[20px]' : 'text-[18px]';
+  // Mobile is the primary viewport for this app — bump tile stars
+  // ~1.5× there, drop back to the original size on sm+.
+  const sizeClass =
+    size === 'hero' ? 'text-[20px]' : 'text-[26px] sm:text-[18px]';
   return (
     <span
       role="img"
