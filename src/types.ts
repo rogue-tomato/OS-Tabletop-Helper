@@ -23,12 +23,21 @@ export type Ability = {
   manualPlaceholder?: boolean;
 };
 
+export type Complexity = 1 | 2 | 3 | 4 | 5;
+
 export type Character = {
   id: string;
   name: string;
+  /** Short name shown only on the list-page tile. Falls back to
+   *  `name` if undefined. The detail page always uses `name`. */
+  listName?: string;
   slug: string;
   role: string;
   playstyle: string;
+  /** Official "Complexity" rating from the rulebook (1–5 stars).
+   *  Renders as a row of filled/empty stars on the list tile and the
+   *  hero panel. */
+  complexity?: Complexity;
   art: string;
   /** Optional dedicated cover/thumb for the character list. Falls back
    *  to `art` if undefined or if the file is missing. */

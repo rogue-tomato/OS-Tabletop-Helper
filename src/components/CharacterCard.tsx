@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Character } from '../types';
 import { PlaceholderImage } from './PlaceholderImage';
+import { ComplexityStars } from './ComplexityStars';
 import { thumbUrl } from '../lib/assets';
 
 type Props = {
@@ -35,10 +36,18 @@ export function CharacterCard({ character, eager = false }: Props) {
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.2]"
           fallbackLabel={character.name}
         />
+        {character.complexity ? (
+          <span
+            aria-hidden="true"
+            className="absolute top-2 right-2 inline-flex items-center px-1.5 py-0.5 bg-ink-950/70 backdrop-blur-sm border border-ember-700/40 pointer-events-none"
+          >
+            <ComplexityStars rating={character.complexity} size="tile" />
+          </span>
+        ) : null}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink-950 via-ink-950/85 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-3">
           <h2 className="font-display text-base sm:text-lg text-accent tracking-wide leading-tight text-balance">
-            {character.name}
+            {character.listName ?? character.name}
           </h2>
           <p className="text-[13px] text-bone/80 mt-0.5 line-clamp-2 leading-snug">
             {character.role}

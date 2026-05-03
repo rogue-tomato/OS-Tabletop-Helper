@@ -59,9 +59,11 @@ const toLegacyCharacter = (c: OathswornCharacter): Character => {
   return {
     id: c.id,
     name: c.displayName ?? c.name,
+    listName: meta.listName,
     slug: c.slug,
     role: c.role ?? '',
     playstyle: c.playstyle ?? '',
+    complexity: meta.complexity,
     art: c.art,
     // Inline canonical field wins; otherwise look at the metadata file;
     // otherwise default to `characters/<slug>/cover.webp`. The UI tries

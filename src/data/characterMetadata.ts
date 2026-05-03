@@ -9,6 +9,12 @@
 // needs an entry here when something diverges from the default.
 
 export type CharacterMetadata = {
+  /** Short name shown only on the list-page tile (e.g. "Ranger"
+   *  instead of "A'Dendri Ranger"). The detail page keeps the full
+   *  `displayName`. Falls back to `displayName` if absent. */
+  listName?: string;
+  /** Official "Complexity" rating from the rulebook (1–5 stars). */
+  complexity?: 1 | 2 | 3 | 4 | 5;
   /** Path under `public/` for the list-page thumbnail. The adapter
    *  defaults this to `characters/<slug>/cover.webp`; if no such file
    *  exists in `public/`, the UI gracefully falls back to `art`. */
@@ -45,26 +51,38 @@ export const HERO_DEFAULT_DESKTOP = 'center center';
 
 export const metadata: Record<string, CharacterMetadata> = {
   warden: {
+    listName: 'Warden',
+    complexity: 3,
     heroArtMobile: 'characters/warden/art.mobile.webp',
     searchTags: ['inquisitor', 'tank', 'shield', 'chain', 'taunt'],
   },
   'ursus-warbear': {
+    listName: 'Warbear',
+    complexity: 3,
     heroArtMobile: 'characters/ursus-warbear/art.mobile.webp',
     searchTags: ['warbear', 'beast', 'predator', 'apex'],
   },
   witch: {
+    listName: 'Witch',
+    complexity: 5,
     heroArtMobile: 'characters/witch/art.mobile.webp',
     searchTags: ['sorcery', 'mage', 'caster', 'fire', 'ice', 'lightning', 'spell', 'aoe'],
   },
   priest: {
+    listName: 'Priest',
+    complexity: 2,
     heroArtMobile: 'characters/priest/art.mobile.webp',
     searchTags: ['cleric', 'healer', 'monk', 'faith', 'hammer', 'support'],
   },
   'adendri-ranger': {
+    listName: 'Ranger',
+    complexity: 1,
     heroArtMobile: 'characters/adendri-ranger/art.mobile.webp',
     searchTags: ['archer', 'sniper', 'woodland', 'ranged'],
   },
   'scar-tribe-exile': {
+    listName: 'Exile',
+    complexity: 1,
     // The Exile's artwork composition centers the figure differently —
     // keep the default centered crop instead of biasing left.
     heroObjectPositionMobile: 'center center',
@@ -72,26 +90,38 @@ export const metadata: Record<string, CharacterMetadata> = {
     searchTags: ['barbarian', 'tribal', 'berserker', 'rage', 'crit'],
   },
   cur: {
+    listName: 'Cur',
+    complexity: 3,
     heroArtMobile: 'characters/cur/art.mobile.webp',
     searchTags: ['assassin', 'thief', 'rogue', 'shadow', 'poison', 'sneak'],
   },
   penitent: {
+    listName: 'Penitent',
+    complexity: 3,
     heroArtMobile: 'characters/penitent/art.mobile.webp',
     searchTags: ['holy', 'crusader', 'paladin', 'sacrifice'],
   },
   'avi-harbinger': {
+    listName: 'Harbinger',
+    complexity: 4,
     heroArtMobile: 'characters/avi-harbinger/art.mobile.webp',
     searchTags: ['avian', 'oracle', 'fate', 'predict', 'foresight'],
   },
   'thracian-blade': {
+    listName: 'Blade',
+    complexity: 3,
     heroArtMobile: 'characters/thracian-blade/art.mobile.webp',
     searchTags: ['gladiator', 'arena', 'duelist', 'parry', 'sword'],
   },
   'adendri-grove-maiden': {
+    listName: 'Grove Maiden',
+    complexity: 5,
     heroArtMobile: 'characters/adendri-grove-maiden/art.mobile.webp',
     searchTags: ['summoner', 'wychwood', 'sentinel', 'guardian', 'turret'],
   },
   huntress: {
+    listName: 'Huntress',
+    complexity: 5,
     heroArtMobile: 'characters/huntress/art.mobile.webp',
     searchTags: ['noble', 'falconer', 'falcon', 'trap', 'archery'],
   },
