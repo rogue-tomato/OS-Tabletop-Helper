@@ -11,8 +11,8 @@ import sharp from 'sharp';
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const PUBLIC_DIR = path.join(ROOT, 'public', 'characters');
-const THUMB_WIDTH = 600;
-const QUALITY = 88;
+const THUMB_WIDTH = 480;
+const QUALITY = 82;
 
 let made = 0;
 let skipped = 0;

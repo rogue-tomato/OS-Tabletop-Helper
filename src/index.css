@@ -19,18 +19,13 @@
     @apply font-body text-bone bg-ink-950 antialiased;
     font-size: 16px;
     line-height: 1.5;
-    /* Misty cursed forest backdrop:
-       - ~72% black overlay (top layer) so the art reads as a deep,
-         pushed-back atmosphere rather than a competing image
-       - the forest concept-art stretched to cover the viewport on
-         every device, locked in place while the page scrolls */
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.77), rgba(0, 0, 0, 0.77)),
-      var(--forest-bg-url);
-    background-size: cover, cover;
-    background-position: center, center;
-    background-repeat: no-repeat, no-repeat;
-    background-attachment: fixed, fixed;
+    /* Background art ships pre-darkened, so no extra overlay here —
+       otherwise the page reads as a flat black wash. */
+    background-image: var(--forest-bg-url);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
