@@ -12,7 +12,6 @@ import { SummaryTab } from '../components/SummaryTab';
 import { CardsTab } from '../components/CardsTab';
 import { LoreTab } from '../components/LoreTab';
 import { ArtLightbox } from '../components/ArtLightbox';
-import { ComplexityStars } from '../components/ComplexityStars';
 import { SearchInput } from '../components/SearchInput';
 import { SearchResults } from '../components/SearchResults';
 import { findCharacter } from '../data/characters';
@@ -192,17 +191,8 @@ export function CharacterPage() {
               </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-transparent pointer-events-none" />
               <div className="absolute inset-x-0 bottom-0 p-4 pointer-events-none">
-                <h2 className="font-display text-2xl sm:text-3xl text-accent tracking-wide leading-tight text-balance flex items-center gap-3 flex-wrap">
-                  <span>{character.name}</span>
-                  {character.complexity ? (
-                    <>
-                      <span className="text-accent/50 font-normal">|</span>
-                      <ComplexityStars
-                        rating={character.complexity}
-                        size="hero"
-                      />
-                    </>
-                  ) : null}
+                <h2 className="font-display text-2xl sm:text-3xl text-accent tracking-wide leading-tight text-balance">
+                  {character.name}
                 </h2>
                 <p className="text-bone/85 text-[15px] mt-1 leading-snug">
                   {character.role}

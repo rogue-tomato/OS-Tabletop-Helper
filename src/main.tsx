@@ -43,6 +43,25 @@ if ('scrollRestoration' in window.history) {
   window.history.scrollRestoration = 'manual';
 }
 
+// Try to pin the page to portrait. The Screen Orientation API is
+// honoured only in PWA / fullscreen contexts (Chrome/Android,
+// installed PWA on iOS) — regular Mobile Safari ignores it. The
+// `<link rel="manifest">` + `orientation: portrait-primary` does the
+// rest for installed PWAs. In a normal browser tab there's no way to
+// lock orientation, that's a hard OS-level rule.
+const sOrient = (
+  screen as Screen & {
+    orientation?: ScreenOrientation & {
+      lock?: (orientation: string) => Promise<void>;
+    };
+  }
+).orientation;
+if (sOrient && typeof sOrient.lock === 'function') {
+  sOrient.lock('portrait').catch(() => {
+    /* host doesn't allow it — silently degrade */
+  });
+}
+
 // Service Worker — cache-first for assets, stale-while-revalidate for
 // the HTML shell. This is what makes second-and-subsequent loads
 // instant (and survives offline once the initial visit has cached
