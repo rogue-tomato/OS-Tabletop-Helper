@@ -1,0 +1,17 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+.env
+.env.local
+*.log
+.vite
+.idea
+.vscode
+
+# TS incremental compile cache
+tsconfig.tsbuildinfo
+
+# Drop folder for scripts/import-hero-variants.mjs (images go straight
+# into public/characters after processing — _incoming/ is local only).
+_incoming/

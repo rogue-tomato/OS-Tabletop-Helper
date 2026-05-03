@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Oathsworn — Card Verification Gallery</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08060a;
+        --panel: rgba(26, 18, 26, 0.7);
+        --panel-soft: rgba(36, 24, 34, 0.5);
+        --border: rgba(165, 95, 36, 0.35);
+        --gold: #e0a857;
+        --gold-soft: #f5c878;
+        --bone: #ece2cc;
+        --warn: #ff7676;
+        --ok: #79c98a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        background-image:
+          radial-gradient(ellipse at 20% -10%, rgba(201, 133, 56, 0.15), transparent 55%),
+          radial-gradient(ellipse at 90% 110%, rgba(80, 30, 90, 0.18), transparent 55%);
+        background-attachment: fixed;
+        color: var(--bone);
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(8, 6, 10, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 20px;
+      }
+      header h1 {
+        margin: 0 0 4px 0;
+        font-family: 'Cinzel', serif;
+        color: var(--gold);
+        font-size: 22px;
+        letter-spacing: 0.06em;
+      }
+      header p { margin: 0; color: rgba(236, 226, 204, 0.7); font-size: 14px; }
+      header nav { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+      header nav a { color: var(--gold-soft); text-decoration: none; font-size: 14px; }
+      header nav a:hover { color: var(--gold); text-decoration: underline; }
+      main { max-width: 1280px; margin: 0 auto; padding: 24px 20px 80px; }
+
+      .character {
+        margin: 32px 0 48px;
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+      }
+      .character h2 {
+        margin: 0;
+        font-family: 'Cinzel', serif;
+        color: var(--gold);
+        font-size: 24px;
+        letter-spacing: 0.04em;
+      }
+      .character .meta {
+        color: rgba(236, 226, 204, 0.7);
+        font-size: 14px;
+        margin: 4px 0 0;
+      }
+
+      .summary {
+        margin: 14px 0 8px;
+        padding: 10px 14px;
+        border-left: 3px solid var(--gold);
+        background: var(--panel-soft);
+        border-radius: 0 8px 8px 0;
+      }
+      .summary p { margin: 4px 0; font-size: 14px; }
+      .summary .row { display: flex; flex-wrap: wrap; gap: 16px; }
+      .summary .row strong { color: var(--gold-soft); }
+
+      .warning, .info {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        margin: 8px 0;
+        line-height: 1.45;
+      }
+      .warning {
+        border: 1px solid rgba(255, 118, 118, 0.35);
+        background: rgba(80, 20, 20, 0.35);
+        color: #ffd6d6;
+      }
+      .info {
+        border: 1px solid rgba(165, 95, 36, 0.25);
+        background: var(--panel-soft);
+        color: rgba(236, 226, 204, 0.85);
+      }
+
+      .level {
+        margin-top: 20px;
+        padding-top: 12px;
+        border-top: 1px dashed rgba(165, 95, 36, 0.2);
+      }
+      .level h3 {
+        margin: 0 0 12px 0;
+        font-family: 'Cinzel', serif;
+        color: var(--gold-soft);
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .cooldown-group {
+        margin: 12px 0 18px;
+      }
+      .cooldown-group h4 {
+        margin: 0 0 8px 0;
+        color: rgba(245, 200, 120, 0.8);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel-soft);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .card .img {
+        aspect-ratio: 3 / 4;
+        background: #0c090c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card .img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .card .placeholder {
+        color: rgba(245, 200, 120, 0.6);
+        font-family: 'Cinzel', serif;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 12px;
+        line-height: 1.4;
+      }
+      .card .body {
+        padding: 10px 12px 12px;
+        font-size: 13px;
+      }
+      .card .body .name {
+        color: var(--bone);
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 2px;
+        line-height: 1.3;
+      }
+      .card .body .file {
+        color: rgba(236, 226, 204, 0.5);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 11px;
+        word-break: break-all;
+      }
+      .card .body .badges {
+        margin-top: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .card .body .badge {
+        font-family: 'Cinzel', serif;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        color: var(--gold-soft);
+        background: rgba(165, 95, 36, 0.12);
+      }
+      .card .body .badge.warn {
+        color: #ffd1d1;
+        border-color: rgba(255, 118, 118, 0.4);
+        background: rgba(120, 40, 40, 0.25);
+      }
+      .card .body .badge.confirmed {
+        color: #cfe9d4;
+        border-color: rgba(121, 201, 138, 0.4);
+        background: rgba(40, 100, 60, 0.18);
+      }
+
+      .card.missing {
+        opacity: 0.85;
+        border-style: dashed;
+        border-color: rgba(255, 118, 118, 0.35);
+      }
+      .card.missing .img { background: rgba(80, 20, 20, 0.18); }
+
+      .card.placeholder {
+        border-style: dashed;
+        border-color: rgba(245, 200, 120, 0.45);
+        background: rgba(50, 34, 48, 0.4);
+      }
+      .card.placeholder .img {
+        background: rgba(50, 34, 48, 0.5);
+        background-image:
+          repeating-linear-gradient(
+            45deg,
+            rgba(245, 200, 120, 0.05) 0,
+            rgba(245, 200, 120, 0.05) 8px,
+            transparent 8px,
+            transparent 16px
+          );
+      }
+      .card.placeholder .placeholder-text {
+        color: var(--gold-soft);
+        font-family: 'Cinzel', serif;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 12px;
+        line-height: 1.4;
+      }
+      .card.placeholder .placeholder-text small {
+        display: block;
+        margin-top: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 10px;
+        text-transform: none;
+        letter-spacing: 0;
+        color: rgba(236, 226, 204, 0.7);
+        word-break: break-all;
+      }
+
+      footer {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 20px 60px;
+        color: rgba(236, 226, 204, 0.5);
+        font-size: 13px;
+      }
+
+      @media (max-width: 480px) {
+        .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .card .body { padding: 8px 10px 10px; }
+        .card .body .name { font-size: 13px; }
+        .card .body .file { font-size: 10px; }
+        main { padding: 16px 12px 60px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Oathsworn — Card Verification Gallery</h1>
+      <p>
+        Manual verification view. Every card extracted from the SingleFile HTML capture is
+        rendered below, grouped by character → level → cooldown. The cooldown-0 starter is
+        flagged as missing for every character because it is not present anywhere in the source.
+      </p>
+      <nav id="nav"></nav>
+    </header>
+
+    <main id="root"></main>
+
+    <footer>
+      <p>
+        Generated from <code>src/data/oathswornCanonicalDb.ts</code> on 2026-04-30. To
+        re-run, edit the <code>data</code> array near the bottom of this file.
+      </p>
+    </footer>
+
+    <script>
+      // ----------------------------------------------------------------
+      // Each character entry mirrors the canonical DB. cardImage paths
+      // are relative to /public so that this file works both via Vite
+      // dev server (open at /card-gallery.html) and when opened directly
+      // from disk.
+      // ----------------------------------------------------------------
+      const characters = [
+        {
+          slug: 'warden',
+          name: 'The Warden',
+          displayName: 'Warden',
+          art: 'characters/warden/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Claimed Ground',  cd: 1, file: 'characters/warden/cards/01_claimed_ground.webp',  conf: true },
+            { n: 'Guard',           cd: 1, file: 'characters/warden/cards/02_guard.webp',            conf: true },
+            { n: 'Chain Drag',      cd: 2, file: 'characters/warden/cards/03_chain_drag.webp',       conf: true },
+            { n: 'Arcing Strike',   cd: 2, file: 'characters/warden/cards/04_arcing_strike.webp',    conf: true },
+            { n: 'Shield Bash',     cd: 3, file: 'characters/warden/cards/05_shield_bash.webp',      conf: true },
+            { n: 'Taunt',           cd: 3, file: 'characters/warden/cards/06_taunt.webp',            conf: true },
+          ],
+          unlocked: {
+            2: [ { n: 'As One!',     conf: false }, { n: 'Stand Fast!', conf: false } ],
+            5: [ { n: 'Reflection',  conf: true,  file: 'characters/warden/cards/level-5/01_reflection.webp' },
+                 { n: 'Final Verdict', conf: true, file: 'characters/warden/cards/level-5/02_final_verdict.webp' } ],
+            10:[ { n: 'Chained',     conf: true, file: 'characters/warden/cards/level-10/01_chained.webp' },
+                 { n: 'Intervention', conf: true, file: 'characters/warden/cards/level-10/02_intervention.webp' } ],
+            15:[ { n: 'Heart Seeker', conf: true, file: 'characters/warden/cards/level-15/01_heart_seeker.webp' },
+                 { n: 'Hold the Line!', conf: true, file: 'characters/warden/cards/level-15/02_hold_the_line.webp' } ],
+          },
+        },
+        {
+          slug: 'ursus-warbear',
+          name: 'The Ursus Warbear',
+          displayName: 'Ursus Warbear',
+          art: 'characters/ursus-warbear/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Feral Roar', cd: 1, conf: false },
+            { n: 'Swipe',      cd: 1, conf: false },
+            { n: 'Ironhide',   cd: 2, conf: false },
+            { n: 'Toss',       cd: 2, conf: false },
+            { n: 'Challenge',  cd: 3, conf: false },
+          ],
+          unlocked: {
+            2: [ { n: 'Batter',      conf: true, file: 'characters/ursus-warbear/cards/level-2/01_batter.webp' },
+                 { n: 'Primal Rage', conf: true, file: 'characters/ursus-warbear/cards/level-2/02_primal_rage.webp' } ],
+            5: [ { n: 'Rend',        conf: true, file: 'characters/ursus-warbear/cards/level-5/01_rend.webp' },
+                 { n: 'Topple',      conf: true, file: 'characters/ursus-warbear/cards/level-5/02_topple.webp' } ],
+            10:[ { n: 'Intervention',  conf: true, file: 'characters/ursus-warbear/cards/level-10/01_intervention.webp' },
+                 { n: 'Feeding Frenzy',conf: true, file: 'characters/ursus-warbear/cards/level-10/02_feeding_frenzy.webp' } ],
+            15:[ { n: 'Great Feat',  conf: true, file: 'characters/ursus-warbear/cards/level-15/01_great_feat.webp' },
+                 { n: 'Warpath',     conf: true, file: 'characters/ursus-warbear/cards/level-15/02_warpath.webp' } ],
+          },
+        },
+        {
+          slug: 'witch',
+          name: 'The Witch',
+          displayName: 'Witch',
+          art: 'characters/witch/art.webp',
+          witch: true,
+          l1: [
+            { n: 'Elemental Suffusion', tag: '★ basic', conf: true,  file: 'characters/witch/cards/01_elemental_suffusion.webp' },
+            { n: 'Kinetic Reflection',  tag: '★ basic', conf: true,  file: 'characters/witch/cards/02_kinetic_reflection.webp' },
+            { n: 'Ice Spike',           tag: 'ice',    conf: true,  file: 'characters/witch/cards/03_ice_spike.webp' },
+            { n: 'Encapsulate',         tag: 'ice',    conf: true,  file: 'characters/witch/cards/04_encapsulate.webp' },
+            { n: 'Comet',               tag: 'ice', cd: 3, conf: true, file: 'characters/witch/cards/05_comet.webp' },
+            { n: 'Chain Lightning',     tag: 'ice', cd: 3, conf: true, file: 'characters/witch/cards/06_chain_lightning.webp' },
+            { n: 'Fireflies',           tag: 'fire',   conf: true,  file: 'characters/witch/cards/07_fireflies.webp' },
+            { n: 'Incineration Wave',   tag: 'fire',   conf: true,  file: 'characters/witch/cards/08_incineration_wave.webp' },
+            { n: 'Fireball',            tag: 'fire', cd: 3, conf: true, file: 'characters/witch/cards/09_fireball.webp' },
+            { n: 'Flaming Whip',        tag: 'fire', cd: 3, conf: true, file: 'characters/witch/cards/10_flaming_whip.webp' },
+            { n: 'Lash Out',            tag: '★ basic', conf: false },
+          ],
+          unlocked: {
+            2: [ { n: 'Glacial Shield', conf: true,  file: 'characters/witch/cards/level-2/01_glacial_shield.webp' },
+                 { n: 'Firewall',       conf: true,  file: 'characters/witch/cards/level-2/02_firewall.webp' },
+                 { n: 'Telekinesis',    conf: false } ],
+            5: [ { n: 'Lightning Rod',  conf: true,  file: 'characters/witch/cards/level-5/01_lightning_rod.webp' },
+                 { n: 'Fireworm',       conf: true,  file: 'characters/witch/cards/level-5/02_fireworm.webp' } ],
+            10:[ { n: 'Supernova',      conf: false }, { n: 'Hoarfrost', conf: false }, { n: 'Elemental Weapon', conf: false } ],
+            15:[ { n: 'Fire Storm',     conf: false }, { n: 'Lightning Storm', conf: false }, { n: 'Telekine Implosion', conf: false } ],
+          },
+        },
+        {
+          slug: 'priest',
+          name: 'The Priest',
+          displayName: 'Priest',
+          art: 'characters/priest/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Righteous Advance',   cd: 1, conf: false },
+            { n: 'Pillar and Path',     cd: 1, conf: false },
+            { n: 'Desperate Prayer',    cd: 2, conf: true, file: 'characters/priest/cards/03_desperate_prayer.webp' },
+            { n: 'Prayer of Protection',cd: 2, conf: true, file: 'characters/priest/cards/04_prayer_of_protection.webp' },
+            { n: 'Fend',                cd: 3, conf: false },
+            { n: 'Weight of Glory',     cd: 3, conf: false },
+          ],
+          unlocked: {
+            2: [ { n: 'Lay On Hands', conf: true, file: 'characters/priest/cards/level-2/01_lay_on_hands.webp' },
+                 { n: 'Martyr',       conf: true, file: 'characters/priest/cards/level-2/02_martyr.webp' } ],
+            5: [ { n: 'Blessing',        conf: false }, { n: 'Transfiguration', conf: false } ],
+            10:[ { n: 'Zeal',     conf: true, file: 'characters/priest/cards/level-10/01_zeal.webp' },
+                 { n: 'Sanctify', conf: true, file: 'characters/priest/cards/level-10/02_sanctify.webp' } ],
+            15:[ { n: 'Holy Warrior',  conf: true, file: 'characters/priest/cards/level-15/01_holy_warrior.webp' },
+                 { n: 'Vitality Aura', conf: true, file: 'characters/priest/cards/level-15/02_vitality_aura.webp' } ],
+          },
+        },
+        {
+          slug: 'adendri-ranger',
+          name: "The A'Dendri Ranger",
+          displayName: "A'Dendri Ranger",
+          art: 'characters/adendri-ranger/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Longshot',           cd: 1, conf: true, file: 'characters/adendri-ranger/cards/01_longshot.webp' },
+            { n: 'Ricochet',           cd: 1, conf: true, file: 'characters/adendri-ranger/cards/02_ricochet.webp' },
+            { n: 'Quickshot',          cd: 2, conf: true, file: 'characters/adendri-ranger/cards/03_quickshot.webp' },
+            { n: 'Thread the Needle',  cd: 2, conf: true, file: 'characters/adendri-ranger/cards/04_thread_the_needle.webp' },
+            { n: 'Child of the Forest',cd: 3, conf: true, file: 'characters/adendri-ranger/cards/05_child_of_the_forest.webp' },
+            { n: 'Multi Shot',         cd: 3, conf: true, file: 'characters/adendri-ranger/cards/06_multi_shot.webp' },
+          ],
+          unlocked: {
+            2: [ { n: 'Amber Daggers', conf: false }, { n: 'Disarming Shot', conf: false } ],
+            5: [ { n: 'Bait and Switch', conf: true, file: 'characters/adendri-ranger/cards/level-5/01_bait_and_switch.webp' },
+                 { n: 'Piercing Arrow',  conf: true, file: 'characters/adendri-ranger/cards/level-5/02_piercing_arrow.webp' } ],
+            10:[ { n: 'Flensing Round', conf: true, file: 'characters/adendri-ranger/cards/level-10/01_flensing_round.webp' },
+                 { n: 'Bodkin',         conf: true, file: 'characters/adendri-ranger/cards/level-10/02_bodkin.webp' } ],
+            15:[ { n: 'Hail of Arrows', conf: false }, { n: 'Poison Tipped Arrow', conf: false } ],
+          },
+        },
+        {
+          slug: 'scar-tribe-exile',
+          name: 'The Scar Tribe Exile',
+          displayName: 'Scar Tribe Exile',
+          art: 'characters/scar-tribe-exile/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Weapon Throw',    cd: 1, conf: true, file: 'characters/scar-tribe-exile/cards/01_weapon_throw.webp' },
+            { n: 'Leap Attack',     cd: 1, conf: true, file: 'characters/scar-tribe-exile/cards/02_leap_attack.webp' },
+            { n: 'Reap',            cd: 2, conf: true, file: 'characters/scar-tribe-exile/cards/03_reap.webp' },
+            { n: 'Roaring Charge',  cd: 2, conf: true, file: 'characters/scar-tribe-exile/cards/04_roaring_charge.webp' },
+            { n: 'Death from Above',cd: 3, conf: false },
+          ],
+          unlocked: {
+            2: [ { n: 'Rake',         conf: true, file: 'characters/scar-tribe-exile/cards/level-2/01_rake.webp' },
+                 { n: 'Line Breaker', conf: true, file: 'characters/scar-tribe-exile/cards/level-2/02_line_breaker.webp' } ],
+            5: [ { n: 'Hurl',         conf: true, file: 'characters/scar-tribe-exile/cards/level-5/01_hurl.webp' },
+                 { n: 'Swiftness',    conf: true, file: 'characters/scar-tribe-exile/cards/level-5/02_swiftness.webp' } ],
+            10:[ { n: 'Berserk',      conf: true, file: 'characters/scar-tribe-exile/cards/level-10/01_berserk.webp' },
+                 { n: 'Feral Charge', conf: true, file: 'characters/scar-tribe-exile/cards/level-10/02_feral_charge.webp' } ],
+            15:[ { n: 'Reave',        conf: true, file: 'characters/scar-tribe-exile/cards/level-15/01_reave.webp' },
+                 { n: 'Devastate',    conf: true, file: 'characters/scar-tribe-exile/cards/level-15/02_devastate.webp' } ],
+          },
+        },
+        {
+          slug: 'cur',
+          name: 'The Cur',
+          displayName: 'Cur',
+          art: 'characters/cur/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Concealment',     cd: 1, conf: false },
+            { n: 'Backstab',        cd: 1, conf: false },
+            { n: 'Low Blow',        cd: 2, conf: true, file: 'characters/cur/cards/01_low_blow.webp' },
+            { n: 'Throwing Daggers',cd: 2, conf: true, file: 'characters/cur/cards/02_throwing_daggers.webp' },
+            { n: 'Smoke Bomb',      cd: 3, conf: false },
+            { n: 'Nightshade',      cd: 3, conf: false },
+          ],
+          unlocked: {
+            2: [ { n: 'Blind', conf: false }, { n: 'Dodge', conf: false } ],
+            5: [ { n: 'Swiftness',  conf: true, file: 'characters/cur/cards/level-5/01_swiftness.webp' },
+                 { n: 'Bloodthorn', conf: true, file: 'characters/cur/cards/level-5/02_bloodthorn.webp' } ],
+            10:[ { n: 'Bullseye',                conf: true, file: 'characters/cur/cards/level-10/01_bullseye.webp' },
+                 { n: 'Death of a Thousand Cuts',conf: true, file: 'characters/cur/cards/level-10/02_death_of_a_thousand_cuts.webp' } ],
+            15:[ { n: 'Shadowrun', conf: false }, { n: 'Amber Bomb', conf: false } ],
+          },
+        },
+        {
+          slug: 'penitent',
+          name: 'The Penitent',
+          displayName: 'Penitent',
+          art: 'characters/penitent/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Guard',        cd: 1, conf: true, file: 'characters/penitent/cards/01_guard.webp' },
+            { n: 'Revenge',      cd: 1, conf: true, file: 'characters/penitent/cards/02_revenge.webp' },
+            { n: 'Sweep',        cd: 2, conf: true, file: 'characters/penitent/cards/03_sweep.webp' },
+            { n: 'Intercession', cd: 2, conf: true, file: 'characters/penitent/cards/04_intercession.webp' },
+            { n: 'Shield Bash',  cd: 3, conf: true, file: 'characters/penitent/cards/05_shield_bash.webp' },
+            { n: 'Taunt',        cd: 3, conf: true, file: 'characters/penitent/cards/06_taunt.webp' },
+          ],
+          unlocked: {
+            2: [ { n: 'Repel',     conf: true, file: 'characters/penitent/cards/level-2/01_repel.webp' },
+                 { n: 'Judgement', conf: true, file: 'characters/penitent/cards/level-2/02_judgement.webp' } ],
+            5: [ { n: 'Death Wish', conf: false }, { n: 'Blessing', conf: false } ],
+            10:[ { n: 'Zeal',       conf: false }, { n: 'Intervention', conf: false } ],
+            15:[ { n: 'Reflection', conf: false }, { n: 'Righteous Strike', conf: false } ],
+          },
+        },
+        {
+          slug: 'avi-harbinger',
+          name: 'The Avi Harbinger',
+          displayName: 'Avi Harbinger',
+          art: 'characters/avi-harbinger/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Backstab',             cd: 1, conf: false },
+            { n: 'Prophetic Fulfilment', cd: 1, conf: false },
+            { n: 'Foreshadowing',        cd: 2, conf: false },
+            { n: 'Prescient Strike',     cd: 2, conf: false },
+            { n: 'Deadeye Shot',         cd: 3, conf: true, file: 'characters/avi-harbinger/cards/01_deadeye_shot.webp' },
+            { n: 'One Soul',             cd: 3, conf: true, file: 'characters/avi-harbinger/cards/02_one_soul.webp' },
+          ],
+          unlocked: {
+            2: [ { n: 'Quill Throw', conf: false }, { n: 'Wingslam', conf: false } ],
+            5: [ { n: 'Quickening',   conf: true, file: 'characters/avi-harbinger/cards/level-5/01_quickening.webp' },
+                 { n: 'Syphon Spirit',conf: true, file: 'characters/avi-harbinger/cards/level-5/02_syphon_spirit.webp' } ],
+            10:[ { n: 'Soul Tie', conf: true, file: 'characters/avi-harbinger/cards/level-10/01_soul_tie.webp' },
+                 { n: 'Dodge',    conf: true, file: 'characters/avi-harbinger/cards/level-10/02_dodge.webp' } ],
+            15:[ { n: 'Windwalk',   conf: true, file: 'characters/avi-harbinger/cards/level-15/01_windwalk.webp' },
+                 { n: 'Fateweaver', conf: true, file: 'characters/avi-harbinger/cards/level-15/02_fateweaver.webp' } ],
+          },
+        },
+        {
+          slug: 'thracian-blade',
+          name: 'The Blade',
+          displayName: 'Thracian Blade',
+          art: 'characters/thracian-blade/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Charging Boar',    cd: 1, conf: true, file: 'characters/thracian-blade/cards/01_charging_boar.webp' },
+            { n: 'Roll',             cd: 1, conf: true, file: 'characters/thracian-blade/cards/02_roll.webp' },
+            { n: 'Winnowing Strike', cd: 2, conf: true, file: 'characters/thracian-blade/cards/03_winnowing_strike.webp' },
+            { n: 'Somersault',       cd: 2, conf: true, file: 'characters/thracian-blade/cards/04_somersault.webp' },
+            { n: 'Mules Regard',     cd: 3, conf: true, file: 'characters/thracian-blade/cards/05_mules_regard.webp' },
+            { n: 'Cleaving Slide',   cd: 3, conf: true, file: 'characters/thracian-blade/cards/06_cleaving_slide.webp' },
+          ],
+          unlocked: {
+            2: [ { n: 'Master Parry', conf: true, file: 'characters/thracian-blade/cards/level-2/01_master_parry.webp' },
+                 { n: 'Weapon Throw', conf: true, file: 'characters/thracian-blade/cards/level-2/02_weapon_throw.webp' } ],
+            5: [ { n: 'Rising Tusk',  conf: true, file: 'characters/thracian-blade/cards/level-5/01_rising_tusk.webp' },
+                 { n: 'Cross Cut',    conf: true, file: 'characters/thracian-blade/cards/level-5/02_cross_cut.webp' } ],
+            10:[ { n: 'Nightfall',   conf: false }, { n: 'Blade Dance', conf: false } ],
+            15:[ { n: 'Perfect Form', conf: true, file: 'characters/thracian-blade/cards/level-15/01_perfect_form.webp' },
+                 { n: 'Blade Call',   conf: true, file: 'characters/thracian-blade/cards/level-15/02_blade_call.webp' } ],
+          },
+        },
+        {
+          slug: 'adendri-grove-maiden',
+          name: 'The Grove Maiden',
+          displayName: "A'Dendri Grove Maiden",
+          art: 'characters/adendri-grove-maiden/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Raise Sentinel',   cd: 1, conf: false },
+            { n: 'Volley',           cd: 1, conf: false },
+            { n: 'Thundering Giant', cd: 2, conf: false },
+            { n: 'Life Bloom',       cd: 2, conf: false },
+            { n: "Nature's Fury",    cd: 3, conf: false },
+            { n: 'Thorns',           cd: 3, conf: false },
+          ],
+          unlocked: {
+            2: [ { n: 'Grasping Roots', conf: true, file: 'characters/adendri-grove-maiden/cards/level-2/01_grasping_roots.webp' },
+                 { n: 'Uproot',         conf: true, file: 'characters/adendri-grove-maiden/cards/level-2/02_uproot.webp' } ],
+            5: [ { n: 'Bioform Protector', conf: true, file: 'characters/adendri-grove-maiden/cards/level-5/01_bioform_protector.webp' },
+                 { n: 'Exploding Spore',   conf: true, file: 'characters/adendri-grove-maiden/cards/level-5/02_exploding_spore.webp' } ],
+            10:[ { n: 'Verdant Explosion', conf: true, file: 'characters/adendri-grove-maiden/cards/level-10/01_verdant_explosion.webp' },
+                 { n: 'Essence Infusion',  conf: true, file: 'characters/adendri-grove-maiden/cards/level-10/02_essence_infusion.webp' } ],
+            15:[ { n: 'Grove Song', conf: false }, { n: 'Needle Storm', conf: false } ],
+          },
+        },
+        {
+          slug: 'huntress',
+          name: 'The Huntress',
+          displayName: 'Huntress',
+          art: 'characters/huntress/art.webp',
+          witch: false,
+          l1: [
+            { n: 'Rile and Rake',     cd: 1, conf: true, file: 'characters/huntress/cards/01_rile_and_rake.webp' },
+            { n: "Hunter's Call",     cd: 1, conf: true, file: 'characters/huntress/cards/02_hunters_call.webp' },
+            { n: 'Swoop',             cd: 2, conf: true, file: 'characters/huntress/cards/03_swoop.webp' },
+            { n: 'Clamp On',          cd: 2, conf: true, file: 'characters/huntress/cards/04_clamp_on.webp' },
+            { n: 'Hinder',            cd: 3, conf: true, file: 'characters/huntress/cards/05_hinder.webp' },
+            { n: 'Flight of Feathers',cd: 3, conf: true, file: 'characters/huntress/cards/06_flight_of_feathers.webp' },
+          ],
+          unlocked: {
+            2: [ { n: 'Leap Attack',     conf: false }, { n: 'Whistling Arrow', conf: false }, { n: 'Spike Trap', conf: false } ],
+            5: [ { n: 'Flank Attack',     conf: true, file: 'characters/huntress/cards/level-5/01_flank_attack.webp' },
+                 { n: 'Eagle Eye Shot',   conf: true, file: 'characters/huntress/cards/level-5/02_eagle_eye_shot.webp' },
+                 { n: 'Under the Wing',   conf: false }, { n: 'Amber Satchel Charge', conf: false } ],
+            10:[ { n: 'Lunge',          conf: true, file: 'characters/huntress/cards/level-10/01_lunge.webp' },
+                 { n: 'Piercing Arrow', conf: true, file: 'characters/huntress/cards/level-10/02_piercing_arrow.webp' },
+                 { n: 'Eye Gouge',      conf: false } ],
+            15:[ { n: 'Falcon Strike', conf: false }, { n: 'Tandem Strike', conf: false }, { n: 'Death Dive', conf: false } ],
+          },
+        },
+      ];
+
+      // ----------------------------------------------------------------
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function cardEl(c, opts) {
+        const div = document.createElement('div');
+        const isPlaceholder = !!c.placeholder;
+        const isMissing = !!(opts && opts.missing) && !isPlaceholder;
+        div.className =
+          'card' +
+          (isMissing ? ' missing' : '') +
+          (isPlaceholder ? ' placeholder' : '');
+        const img = document.createElement('div');
+        img.className = 'img';
+
+        if (isPlaceholder) {
+          const ph = document.createElement('div');
+          ph.className = 'placeholder-text';
+          ph.innerHTML =
+            'Manual placeholder<br>— needs source —' +
+            (c.suggestedPath
+              ? '<small>Drop image at:<br>' + escapeHtml(c.suggestedPath) + '</small>'
+              : '');
+          img.appendChild(ph);
+        } else if (c.file) {
+          const i = document.createElement('img');
+          i.src = c.file;
+          i.alt = c.n;
+          i.loading = 'lazy';
+          img.appendChild(i);
+        } else if (opts && opts.missing) {
+          const ph = document.createElement('div');
+          ph.className = 'placeholder';
+          ph.textContent = opts.missingLabel || 'Slot empty';
+          img.appendChild(ph);
+        } else {
+          const ph = document.createElement('div');
+          ph.className = 'placeholder';
+          ph.textContent = c.n + ' — no image yet';
+          img.appendChild(ph);
+        }
+
+        const body = document.createElement('div');
+        body.className = 'body';
+        const fileLine = c.file
+          ? '<div class="file">' + escapeHtml(c.file) + '</div>'
+          : isPlaceholder && c.suggestedPath
+            ? '<div class="file">' + escapeHtml(c.suggestedPath) + '</div>'
+            : '';
+        body.innerHTML =
+          '<div class="name">' + escapeHtml(c.n) + '</div>' +
+          fileLine +
+          '<div class="badges">' +
+            (c.cd !== undefined ? '<span class="badge">CD ' + c.cd + '</span>' : '') +
+            (c.tag ? '<span class="badge">' + escapeHtml(c.tag) + '</span>' : '') +
+            (isPlaceholder
+              ? '<span class="badge warn">manual placeholder</span>'
+              : c.conf
+                ? '<span class="badge confirmed">confirmed</span>'
+                : '<span class="badge warn">needsVerification</span>') +
+          '</div>';
+        div.appendChild(img);
+        div.appendChild(body);
+        return div;
+      }
+
+      function buildLevel1Section(c) {
+        const wrap = document.createElement('div');
+        wrap.className = 'level';
+        const h = document.createElement('h3');
+        h.textContent = 'Level 1 starting cards';
+        wrap.appendChild(h);
+
+        if (c.witch) {
+          // Witch — flat grid (no cooldown grouping; she has 22-card pool).
+          const grid = document.createElement('div');
+          grid.className = 'cards';
+          c.l1.forEach((cd) => grid.appendChild(cardEl(cd)));
+          wrap.appendChild(grid);
+        } else {
+          const groups = [
+            { title: 'Cooldown 0 — mandatory starter', cd: 0 },
+            { title: 'Cooldown 1', cd: 1 },
+            { title: 'Cooldown 2', cd: 2 },
+            { title: 'Cooldown 3', cd: 3 },
+          ];
+          groups.forEach((g) => {
+            const inGroup = c.l1.filter((x) => x.cd === g.cd);
+            if (g.cd === 0) {
+              // Always show the cd-0 placeholder so the missing slot is visible.
+              const wrapCd = document.createElement('div');
+              wrapCd.className = 'cooldown-group';
+              wrapCd.innerHTML = '<h4>' + g.title + '</h4>';
+              const grid = document.createElement('div');
+              grid.className = 'cards';
+              if (inGroup.length === 0) {
+                grid.appendChild(cardEl({
+                  n: 'Cooldown 0 Starter Card',
+                  cd: 0,
+                  conf: false,
+                  placeholder: true,
+                  suggestedPath:
+                    'characters/' + c.slug + '/cards/level-1/00_manual_cd0.png',
+                }));
+              } else {
+                inGroup.forEach((cd) => grid.appendChild(cardEl(cd)));
+              }
+              wrapCd.appendChild(grid);
+              wrap.appendChild(wrapCd);
+            } else if (inGroup.length > 0) {
+              const wrapCd = document.createElement('div');
+              wrapCd.className = 'cooldown-group';
+              wrapCd.innerHTML = '<h4>' + g.title + '</h4>';
+              const grid = document.createElement('div');
+              grid.className = 'cards';
+              inGroup.forEach((cd) => grid.appendChild(cardEl(cd)));
+              // If a cooldown 1/2/3 group has fewer than 2 cards, surface a warning placeholder.
+              if (inGroup.length < 2) {
+                grid.appendChild(cardEl(
+                  { n: 'Slot empty for this cooldown', conf: false },
+                  { missing: true, missingLabel: 'extra cooldown-' + g.cd + ' card not located' }
+                ));
+              }
+              wrapCd.appendChild(grid);
+              wrap.appendChild(wrapCd);
+            } else {
+              // Group missing entirely
+              const wrapCd = document.createElement('div');
+              wrapCd.className = 'cooldown-group';
+              wrapCd.innerHTML = '<h4>' + g.title + '</h4>';
+              const grid = document.createElement('div');
+              grid.className = 'cards';
+              grid.appendChild(cardEl(
+                { n: 'No cards', conf: false },
+                { missing: true, missingLabel: 'cooldown-' + g.cd + ' slot empty' }
+              ));
+              wrapCd.appendChild(grid);
+              wrap.appendChild(wrapCd);
+            }
+          });
+        }
+        return wrap;
+      }
+
+      function buildUnlockSection(c, level) {
+        const list = c.unlocked[level] || [];
+        if (list.length === 0) return null;
+        const wrap = document.createElement('div');
+        wrap.className = 'level';
+        const h = document.createElement('h3');
+        h.textContent = 'Level ' + level + ' unlocks';
+        wrap.appendChild(h);
+        const grid = document.createElement('div');
+        grid.className = 'cards';
+        list.forEach((cd) => grid.appendChild(cardEl(cd)));
+        wrap.appendChild(grid);
+        return wrap;
+      }
+
+      function summaryAndWarnings(c) {
+        const wrap = document.createElement('div');
+
+        const expectedL1 = c.witch ? 11 : 7;
+        const l1 = c.l1.length;
+        const confirmed = c.l1.filter((x) => x.conf).length;
+
+        const sum = document.createElement('div');
+        sum.className = 'summary';
+        let extracted = c.l1.filter((x) => x.file).length;
+        for (const lv of [2, 5, 10, 15]) {
+          extracted += (c.unlocked[lv] || []).filter((x) => x.file).length;
+        }
+        sum.innerHTML =
+          '<div class="row">' +
+            '<p><strong>Slug:</strong> ' + escapeHtml(c.slug) + '</p>' +
+            '<p><strong>Display:</strong> ' + escapeHtml(c.displayName) + '</p>' +
+            '<p><strong>Extracted images:</strong> ' + extracted + '</p>' +
+            '<p><strong>Level 1 in DB:</strong> ' + l1 + ' / ' + expectedL1 + '</p>' +
+            '<p><strong>Level 1 confirmed:</strong> ' + confirmed + ' / ' + l1 + '</p>' +
+          '</div>' +
+          '<p><strong>L1 names:</strong> ' + escapeHtml(c.l1.map((x) => x.n).join(', ')) + '</p>';
+        wrap.appendChild(sum);
+
+        // Cooldown distribution
+        if (!c.witch) {
+          const counts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+          c.l1.forEach((x) => { if (x.cd !== undefined) counts[x.cd]++; });
+          if (counts[0] === 0) {
+            const w = document.createElement('div');
+            w.className = 'warning';
+            w.innerHTML =
+              '<strong>Missing cooldown-0 starter.</strong> A normal Level 1 hand is ' +
+              '1 × cd0 + 2 × cd1 + 2 × cd2 + 2 × cd3 = 7 cards. The cooldown-0 card is ' +
+              'absent from the HTML and PDF for this character. Per rule 8 (no guessing) ' +
+              'the slot is intentionally empty.';
+            wrap.appendChild(w);
+          }
+          if (counts[1] !== 2 || counts[2] !== 2 || counts[3] !== 2) {
+            const w = document.createElement('div');
+            w.className = 'warning';
+            w.innerHTML =
+              '<strong>Cooldown distribution irregular.</strong> Found ' +
+              'cd1=' + counts[1] + ', cd2=' + counts[2] + ', cd3=' + counts[3] +
+              ' (expected 2/2/2). Inspect the cards above to identify the missing slot.';
+            wrap.appendChild(w);
+          }
+          if (l1 < 7) {
+            const w = document.createElement('div');
+            w.className = 'warning';
+            w.innerHTML =
+              '<strong>Level 1 short by ' + (7 - l1) + ' card(s).</strong> ' +
+              'Total cards in DB: ' + l1 + '. Expected 7.';
+            wrap.appendChild(w);
+          }
+          if (l1 === 6 && counts[0] === 0 && counts[1] === 2 && counts[2] === 2 && counts[3] === 2) {
+            const i = document.createElement('div');
+            i.className = 'info';
+            i.innerHTML =
+              'Level 1 hand is the typical 6-card pattern (2/2/2 across cooldowns 1/2/3) ' +
+              'with the cooldown-0 starter intentionally omitted. This is the normal state ' +
+              'after the HTML pass.';
+            wrap.appendChild(i);
+          }
+        } else {
+          if (l1 < 11) {
+            const w = document.createElement('div');
+            w.className = 'warning';
+            w.innerHTML =
+              '<strong>Witch starter pool short.</strong> Expected 11 ' +
+              '(3 ★ basic + 4 ice + 4 fire). Found ' + l1 + '.';
+            wrap.appendChild(w);
+          } else {
+            const i = document.createElement('div');
+            i.className = 'info';
+            i.innerHTML =
+              "Witch's expanded starter pool of 11 abilities is preserved (3 ★ basic + 4 ice + 4 fire). " +
+              'In play she chooses 4 elemental + 3 basic for a 7-card hand each chapter.';
+            wrap.appendChild(i);
+          }
+        }
+
+        return wrap;
+      }
+
+      function buildCharacter(c) {
+        const sec = document.createElement('section');
+        sec.className = 'character';
+        sec.id = c.slug;
+
+        const head = document.createElement('div');
+        head.innerHTML =
+          '<h2>' + escapeHtml(c.name) + '</h2>' +
+          '<p class="meta">PDF/HTML name: <code>' + escapeHtml(c.name) +
+          '</code> · Asset / display name: <code>' + escapeHtml(c.displayName) + '</code></p>';
+        sec.appendChild(head);
+
+        sec.appendChild(summaryAndWarnings(c));
+        sec.appendChild(buildLevel1Section(c));
+
+        for (const lv of [2, 5, 10, 15]) {
+          const block = buildUnlockSection(c, lv);
+          if (block) sec.appendChild(block);
+        }
+
+        return sec;
+      }
+
+      const root = document.getElementById('root');
+      const nav = document.getElementById('nav');
+      characters.forEach((c) => {
+        const a = document.createElement('a');
+        a.href = '#' + c.slug;
+        a.textContent = c.displayName;
+        nav.appendChild(a);
+        root.appendChild(buildCharacter(c));
+      });
+    </script>
+  </body>
+</html>
