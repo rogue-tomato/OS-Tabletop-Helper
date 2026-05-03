@@ -12,6 +12,7 @@ import { SummaryTab } from '../components/SummaryTab';
 import { CardsTab } from '../components/CardsTab';
 import { LoreTab } from '../components/LoreTab';
 import { ArtLightbox } from '../components/ArtLightbox';
+import { ComplexityStars } from '../components/ComplexityStars';
 import { SearchInput } from '../components/SearchInput';
 import { SearchResults } from '../components/SearchResults';
 import { findCharacter } from '../data/characters';
@@ -221,6 +222,15 @@ export function CharacterPage() {
             </div>
           </button>
         </section>
+
+        {character.complexity ? (
+          <section className="panel p-4">
+            <h3 className="section-header font-display text-accent tracking-wider uppercase text-[17px]">
+              Difficulty
+            </h3>
+            <ComplexityStars rating={character.complexity} size="hero" />
+          </section>
+        ) : null}
 
         {isSearching ? (
           <div role="region" aria-label="Search results" className="min-h-[80vh]">

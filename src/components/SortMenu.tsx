@@ -56,7 +56,7 @@ export function SortMenu({ value, onChange }: Props) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Sort characters"
-        className="min-h-[48px] min-w-[48px] inline-flex items-center justify-center bg-ink-800/70 border border-ember-700/30 text-accent active:scale-95 transition"
+        className="h-12 w-12 inline-flex items-center justify-center bg-ink-800/70 border border-ember-700/30 text-accent active:scale-95 transition"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

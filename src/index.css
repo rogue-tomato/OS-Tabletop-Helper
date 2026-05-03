@@ -39,6 +39,15 @@
     background-repeat: no-repeat;
     pointer-events: none;
   }
+  /* Subtle ~10% darkening overlay so foreground text/panels read
+     comfortably without losing the art's saturation. */
+  .app-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+  }
   h1,
   h2,
   h3,
@@ -161,21 +170,6 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-  /* Rotated-fit mode for ArtLightbox on portrait phones when the
-     full-art image is landscape. After rotate(90deg) the element's
-     bounding box swaps visually — so what was max-width becomes the
-     vertical bound on screen, and max-height becomes the horizontal
-     bound. We use dvh/dvw so the iOS Safari URL bar collapse doesn't
-     leave gaps. */
-  .art-lightbox-image--rotated {
-    transform: rotate(90deg);
-    width: auto;
-    height: auto;
-    max-width: 90dvh;
-    max-height: 90dvw;
-    object-fit: contain;
-    transition: transform 200ms ease;
   }
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;

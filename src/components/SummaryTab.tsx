@@ -1,5 +1,4 @@
 import type { Character } from '../types';
-import { ComplexityStars } from './ComplexityStars';
 
 type Props = {
   character: Character;
@@ -8,15 +7,6 @@ type Props = {
 export function SummaryTab({ character }: Props) {
   return (
     <div className="space-y-4">
-      {character.complexity ? (
-        <section className="panel p-4 flex items-center gap-3 flex-wrap">
-          <span className="font-display text-accent tracking-wider uppercase text-[17px]">
-            Difficulty:
-          </span>
-          <ComplexityStars rating={character.complexity} size="hero" />
-        </section>
-      ) : null}
-
       <section className="panel p-4">
         <h3 className="section-header font-display text-accent tracking-wider uppercase text-[17px]">
           Available Equipment

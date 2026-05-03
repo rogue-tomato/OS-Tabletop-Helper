@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { assetUrl } from '../lib/assets';
 
 type Props = {
@@ -7,50 +7,7 @@ type Props = {
   onClose: () => void;
 };
 
-// True when the current viewport is a narrow portrait phone AND the
-// loaded image is landscape — i.e. rotating 90° will let the figure
-// fill the screen instead of leaving big black bars top/bottom.
-function shouldAutoRotate(img: HTMLImageElement): boolean {
-  if (typeof window === 'undefined') return false;
-  const portraitPhone =
-    window.innerWidth < 768 && window.innerHeight > window.innerWidth;
-  const landscapeImage = img.naturalWidth > img.naturalHeight;
-  return portraitPhone && landscapeImage;
-}
-
 export function ArtLightbox({ src, alt, onClose }: Props) {
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [rotated, setRotated] = useState(false);
-
-  // Re-evaluate the rotation decision when the image loads, when the
-  // window resizes, and when the device orientation changes — so a
-  // user spinning their phone into landscape correctly drops back to
-  // the un-rotated layout. Both `orientationchange` and the
-  // `(orientation: portrait)` media query fire here because iOS
-  // historically reports `orientationchange` BEFORE the viewport
-  // dimensions update; we also re-run on a short delay to catch up.
-  useEffect(() => {
-    const recalc = () => {
-      const img = imgRef.current;
-      if (!img || !img.complete) return;
-      setRotated(shouldAutoRotate(img));
-    };
-    const recalcSoon = () => {
-      recalc();
-      window.setTimeout(recalc, 200);
-      window.setTimeout(recalc, 500);
-    };
-    const mq = window.matchMedia('(orientation: portrait)');
-    window.addEventListener('resize', recalcSoon);
-    window.addEventListener('orientationchange', recalcSoon);
-    mq.addEventListener?.('change', recalcSoon);
-    return () => {
-      window.removeEventListener('resize', recalcSoon);
-      window.removeEventListener('orientationchange', recalcSoon);
-      mq.removeEventListener?.('change', recalcSoon);
-    };
-  }, []);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -63,12 +20,6 @@ export function ArtLightbox({ src, alt, onClose }: Props) {
       document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
-
-  const handleLoad = () => {
-    const img = imgRef.current;
-    if (!img) return;
-    setRotated(shouldAutoRotate(img));
-  };
 
   return (
     <div
@@ -103,6 +54,11 @@ export function ArtLightbox({ src, alt, onClose }: Props) {
           </svg>
         </button>
       </div>
+      {/* Image is rendered at its natural orientation, fitted to the
+          viewport with object-contain. We deliberately do NOT rotate
+          on portrait phones — the device's own auto-rotate handles
+          orientation, and any extra CSS rotation on top fights it
+          (causing the double-rotation bug). */}
       <div
         className="flex-1 flex items-center justify-center px-3 pb-5 sm:pb-6 safe-bottom"
         onClick={(e) => {
@@ -110,15 +66,9 @@ export function ArtLightbox({ src, alt, onClose }: Props) {
         }}
       >
         <img
-          ref={imgRef}
           src={assetUrl(src)}
           alt={alt}
-          onLoad={handleLoad}
-          className={
-            rotated
-              ? 'art-lightbox-image art-lightbox-image--rotated rounded-md shadow-2xl border border-ember-700/30'
-              : 'art-lightbox-image max-h-[88vh] max-w-full w-auto h-auto object-contain rounded-md shadow-2xl border border-ember-700/30'
-          }
+          className="max-h-[88vh] max-w-full w-auto h-auto object-contain rounded-md shadow-2xl border border-ember-700/30"
         />
       </div>
     </div>
