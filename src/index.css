@@ -84,18 +84,9 @@
     border-bottom: 1px solid rgba(194, 209, 203, 0.6);
     border-right: 1px solid rgba(194, 209, 203, 0.6);
   }
-  /* Hover behaviour for the character grid: the inner art zooms in
-     while the tile box stays put (so neighbours never overlap). The
-     other tiles DARKEN (filter: brightness) instead of fading — fading
-     read as "transparent" against the page bg. Pointer-only. */
-  @media (hover: hover) and (pointer: fine) {
-    .character-list > a {
-      transition: filter 220ms ease;
-    }
-    .character-list:has(> a:hover) > a:not(:hover) {
-      filter: brightness(0.45);
-    }
-  }
+  /* Hover behaviour for the character grid: just the inner-image
+     zoom (handled by `group-hover:scale-[1.2]` in CharacterCard).
+     Siblings stay untouched. */
   /* Section titles inside panels — adds a thin silver-sage underline
      that fades out, plus a leading diamond marker. */
   .section-header {
