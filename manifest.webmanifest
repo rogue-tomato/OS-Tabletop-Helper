@@ -1,0 +1,11 @@
+{
+  "name": "Oathsworn Helper",
+  "short_name": "Oathsworn",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080a09",
+  "theme_color": "#080a09",
+  "description": "Character reference for Oathsworn: Into the Deepwood"
+}
