@@ -5,6 +5,10 @@
 @layer base {
   :root {
     color-scheme: dark;
+    /* Fallback in case main.tsx hasn't injected the resolved BASE_URL
+       version yet (e.g. very first paint). The runtime override picks
+       up vite's BASE_URL so it works under GH Pages too. */
+    --forest-bg-url: url(/forest-bg.webp);
   }
   html,
   body,
@@ -15,24 +19,18 @@
     @apply font-body text-bone bg-ink-950 antialiased;
     font-size: 16px;
     line-height: 1.5;
-    /* Layered atmospheric backdrop:
-       - warm ember halo from the top-left
-       - cool malefic halo from the bottom-right
-       - a subtle inner vignette to deepen the centre
-       - a faint diagonal weave that adds material texture without
-         hurting readability */
+    /* Misty cursed forest backdrop:
+       - ~72% black overlay (top layer) so the art reads as a deep,
+         pushed-back atmosphere rather than a competing image
+       - the forest concept-art stretched to cover the viewport on
+         every device, locked in place while the page scrolls */
     background-image:
-      radial-gradient(ellipse at 18% -12%, rgba(201, 133, 56, 0.22), transparent 58%),
-      radial-gradient(ellipse at 92% 112%, rgba(80, 30, 90, 0.22), transparent 60%),
-      radial-gradient(circle at 50% 55%, rgba(20, 14, 22, 0.45), transparent 70%),
-      repeating-linear-gradient(
-        45deg,
-        transparent 0,
-        transparent 24px,
-        rgba(245, 200, 120, 0.025) 24px,
-        rgba(245, 200, 120, 0.025) 25px
-      );
-    background-attachment: fixed;
+      linear-gradient(rgba(0, 0, 0, 0.77), rgba(0, 0, 0, 0.77)),
+      var(--forest-bg-url);
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -48,25 +46,24 @@
   /* Standard parchment/iron panel — sharper than before, with a subtle
      inner frame line so it reads as engraved rather than card-flat. */
   .panel {
-    @apply rounded-md border border-ember-700/40 bg-ink-900/75 backdrop-blur-md shadow-lg;
+    @apply border border-ember-700/40 bg-ink-900/75 backdrop-blur-md shadow-lg;
     position: relative;
   }
   .panel::after {
     content: '';
     position: absolute;
     inset: 5px;
-    border: 1px solid rgba(165, 95, 36, 0.12);
-    border-radius: 3px;
+    border: 1px solid rgba(133, 160, 154, 0.14);
     pointer-events: none;
   }
   .panel-soft {
-    @apply rounded-md border border-ember-700/25 bg-ink-900/55 backdrop-blur-sm;
+    @apply border border-ember-700/25 bg-ink-900/55 backdrop-blur-sm;
   }
-  /* Trading-card-style tile for the character list. Keeps generous
-     rounded corners but adds L-shape gold corner brackets so it feels
-     framed instead of generic. */
+  /* Trading-card-style tile for the character list. Fully square
+     corners with L-shape silver-sage corner brackets so the cards feel
+     framed/etched rather than generic rounded UI. */
   .ornate-card {
-    @apply rounded-xl border border-ember-700/35 bg-ink-900/70 backdrop-blur-md shadow-lg;
+    @apply border border-ember-700/35 bg-ink-900/70 backdrop-blur-md shadow-lg;
     position: relative;
   }
   .ornate-card::before,
@@ -81,19 +78,28 @@
   .ornate-card::before {
     top: -1px;
     left: -1px;
-    border-top: 1px solid rgba(245, 200, 120, 0.55);
-    border-left: 1px solid rgba(245, 200, 120, 0.55);
-    border-top-left-radius: 12px;
+    border-top: 1px solid rgba(194, 209, 203, 0.6);
+    border-left: 1px solid rgba(194, 209, 203, 0.6);
   }
   .ornate-card::after {
     bottom: -1px;
     right: -1px;
-    border-bottom: 1px solid rgba(245, 200, 120, 0.55);
-    border-right: 1px solid rgba(245, 200, 120, 0.55);
-    border-bottom-right-radius: 12px;
+    border-bottom: 1px solid rgba(194, 209, 203, 0.6);
+    border-right: 1px solid rgba(194, 209, 203, 0.6);
   }
-  /* Section titles inside panels — adds a thin gold underline that
-     fades out, plus a leading diamond marker. */
+  /* Hover behaviour for the character grid: the inner art zooms in
+     while the tile box stays put (so neighbours never overlap). The
+     other tiles dim slightly to focus attention. Pointer-only. */
+  @media (hover: hover) and (pointer: fine) {
+    .character-list > a {
+      transition: opacity 220ms ease;
+    }
+    .character-list:has(> a:hover) > a:not(:hover) {
+      opacity: 0.7;
+    }
+  }
+  /* Section titles inside panels — adds a thin silver-sage underline
+     that fades out, plus a leading diamond marker. */
   .section-header {
     position: relative;
     padding-bottom: 8px;
@@ -106,7 +112,7 @@
     content: '';
     width: 6px;
     height: 6px;
-    background: linear-gradient(135deg, rgba(245, 200, 120, 0.9), rgba(165, 95, 36, 0.6));
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.95), rgba(234, 88, 12, 0.7));
     transform: rotate(45deg);
     flex-shrink: 0;
   }
@@ -119,8 +125,8 @@
     height: 1px;
     background: linear-gradient(
       to right,
-      rgba(245, 200, 120, 0.55),
-      rgba(165, 95, 36, 0.18) 35%,
+      rgba(251, 191, 36, 0.55),
+      rgba(234, 88, 12, 0.18) 35%,
       transparent
     );
   }
@@ -149,6 +155,21 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  /* Rotated-fit mode for ArtLightbox on portrait phones when the
+     full-art image is landscape. After rotate(90deg) the element's
+     bounding box swaps visually — so what was max-width becomes the
+     vertical bound on screen, and max-height becomes the horizontal
+     bound. We use dvh/dvw so the iOS Safari URL bar collapse doesn't
+     leave gaps. */
+  .art-lightbox-image--rotated {
+    transform: rotate(90deg);
+    width: auto;
+    height: auto;
+    max-width: 90dvh;
+    max-height: 90dvw;
+    object-fit: contain;
+    transition: transform 200ms ease;
   }
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;

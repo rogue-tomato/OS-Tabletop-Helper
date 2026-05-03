@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { assetUrl } from '../lib/assets';
 
 type Props = {
@@ -7,7 +7,39 @@ type Props = {
   onClose: () => void;
 };
 
+// True when the current viewport is a narrow portrait phone AND the
+// loaded image is landscape — i.e. rotating 90° will let the figure
+// fill the screen instead of leaving big black bars top/bottom.
+function shouldAutoRotate(img: HTMLImageElement): boolean {
+  if (typeof window === 'undefined') return false;
+  const portraitPhone =
+    window.innerWidth < 768 && window.innerHeight > window.innerWidth;
+  const landscapeImage = img.naturalWidth > img.naturalHeight;
+  return portraitPhone && landscapeImage;
+}
+
 export function ArtLightbox({ src, alt, onClose }: Props) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [rotated, setRotated] = useState(false);
+
+  // Re-evaluate the rotation decision when the image loads, when the
+  // window resizes, and when the device orientation changes — so a
+  // user spinning their phone into landscape correctly drops back to
+  // the un-rotated layout.
+  useEffect(() => {
+    const recalc = () => {
+      const img = imgRef.current;
+      if (!img || !img.complete) return;
+      setRotated(shouldAutoRotate(img));
+    };
+    window.addEventListener('resize', recalc);
+    window.addEventListener('orientationchange', recalc);
+    return () => {
+      window.removeEventListener('resize', recalc);
+      window.removeEventListener('orientationchange', recalc);
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -20,6 +52,12 @@ export function ArtLightbox({ src, alt, onClose }: Props) {
       document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
+
+  const handleLoad = () => {
+    const img = imgRef.current;
+    if (!img) return;
+    setRotated(shouldAutoRotate(img));
+  };
 
   return (
     <div
@@ -61,9 +99,15 @@ export function ArtLightbox({ src, alt, onClose }: Props) {
         }}
       >
         <img
+          ref={imgRef}
           src={assetUrl(src)}
           alt={alt}
-          className="max-h-[88vh] max-w-full w-auto h-auto object-contain rounded-md shadow-2xl border border-ember-700/30"
+          onLoad={handleLoad}
+          className={
+            rotated
+              ? 'art-lightbox-image art-lightbox-image--rotated rounded-md shadow-2xl border border-ember-700/30'
+              : 'art-lightbox-image max-h-[88vh] max-w-full w-auto h-auto object-contain rounded-md shadow-2xl border border-ember-700/30'
+          }
         />
       </div>
     </div>

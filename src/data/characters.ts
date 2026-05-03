@@ -22,14 +22,22 @@ import {
 } from './characterMetadata';
 
 const formatCost = (a: OathswornAbility): string | undefined => {
+  // Free-form override wins (used for cards with "?" / variable Animus
+  // costs that don't fit a single number).
   if (a.cost && a.cost.trim().length > 0) return a.cost;
-  if (a.cooldown === undefined || a.cooldown === null) return undefined;
-  return `Cooldown ${a.cooldown}`;
+  const parts: string[] = [];
+  if (a.cooldown !== undefined && a.cooldown !== null) {
+    parts.push(`Cooldown ${a.cooldown}`);
+  }
+  if (a.animusCost !== undefined && a.animusCost !== null) {
+    parts.push(`Animus cost ${a.animusCost}`);
+  }
+  return parts.length > 0 ? parts.join(', ') : undefined;
 };
 
 const fallbackCardImage = (a: OathswornAbility): string => {
   if (a.cardImage && a.cardImage.length > 0) return a.cardImage;
-  return `characters/${a.characterSlug}/cards/missing.png`;
+  return `characters/${a.characterSlug}/cards/missing.webp`;
 };
 
 const toLegacyAbility = (a: OathswornAbility): Ability => ({
@@ -40,6 +48,8 @@ const toLegacyAbility = (a: OathswornAbility): Ability => ({
   summary: a.shortSummary,
   fullText: a.fullText,
   cardImage: fallbackCardImage(a),
+  cardImageThumb: a.cardImageThumb,
+  cardImageFull: a.cardImageFull,
   needsVerification: a.needsVerification,
   manualPlaceholder: a.manualPlaceholder,
 });
@@ -54,10 +64,10 @@ const toLegacyCharacter = (c: OathswornCharacter): Character => {
     playstyle: c.playstyle ?? '',
     art: c.art,
     // Inline canonical field wins; otherwise look at the metadata file;
-    // otherwise default to `characters/<slug>/cover.jpg`. The UI tries
+    // otherwise default to `characters/<slug>/cover.webp`. The UI tries
     // this URL first and falls back to `art` automatically when missing.
     listImage:
-      c.listImage ?? meta.listImage ?? `characters/${c.slug}/cover.jpg`,
+      c.listImage ?? meta.listImage ?? `characters/${c.slug}/cover.webp`,
     heroObjectPositionMobile:
       c.heroObjectPositionMobile ??
       meta.heroObjectPositionMobile ??
@@ -66,6 +76,9 @@ const toLegacyCharacter = (c: OathswornCharacter): Character => {
       c.heroObjectPositionDesktop ??
       meta.heroObjectPositionDesktop ??
       HERO_DEFAULT_DESKTOP,
+    heroArtMobile: meta.heroArtMobile,
+    heroArtDesktop: meta.heroArtDesktop,
+    heroArtFull: meta.heroArtFull,
     specialAbility: c.specialAbility,
     canEquip: c.canEquip,
     abilities: c.level1Abilities.map(toLegacyAbility),

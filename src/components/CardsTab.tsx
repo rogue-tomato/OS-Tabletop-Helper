@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Ability, Character } from '../types';
-import { PlaceholderImage } from './PlaceholderImage';
 import { CardLightbox } from './CardLightbox';
+import { CardTile } from './CardTile';
 import {
   getLevelGate,
   type CardLevel,
@@ -14,13 +14,12 @@ type Props = {
 
 const LEVELS: CardLevel[] = [1, 2, 5, 10, 15];
 
-const isCoreCard = (a: Ability): boolean => a.cost === 'Cooldown 0';
-
 function groupByLevel(character: Character): Record<CardLevel, Ability[]> {
   const groups: Record<CardLevel, Ability[]> = { 1: [], 2: [], 5: [], 10: [], 15: [] };
-  // Level 1 — exclude the core cooldown-0 card (it lives in Summary now).
+  // Level 1 includes the cooldown-0 starter (placeholder for the 11
+  // non-Witch characters; Elemental Suffusion and friends for the Witch).
+  // Total: 7 cards for normal characters, 11 for the Witch.
   for (const a of character.abilities) {
-    if (isCoreCard(a)) continue;
     if (a.level === 1) groups[1].push(a);
   }
   // Higher levels come from `unlockedAbilities`, which is the flat
@@ -33,44 +32,10 @@ function groupByLevel(character: Character): Record<CardLevel, Ability[]> {
   return groups;
 }
 
-function PlaceholderTile({ ability }: { ability: Ability }) {
-  return (
-    <div
-      role="figure"
-      aria-label={`${ability.name} — manual placeholder`}
-      className="rounded-md border-2 border-dashed border-ember-700/50 bg-ink-900/40 overflow-hidden flex flex-col"
-    >
-      <div className="relative aspect-[3/4] flex items-center justify-center bg-ink-800/40 [background-image:repeating-linear-gradient(45deg,_rgba(245,200,120,0.05)_0,_rgba(245,200,120,0.05)_8px,_transparent_8px,_transparent_16px)]">
-        <div className="text-center px-4">
-          <p className="font-display tracking-widest uppercase text-ember-400/85 text-[13px] leading-snug">
-            {ability.name}
-          </p>
-          <p className="mt-2 text-bone/70 text-[13px] leading-snug italic">
-            Manual placeholder — needs source
-          </p>
-          {ability.cardImage ? (
-            <p className="mt-3 text-[11px] text-bone/50 break-all font-mono leading-snug">
-              {ability.cardImage}
-            </p>
-          ) : null}
-        </div>
-      </div>
-      <div className="p-3 border-t border-ember-700/20">
-        <p className="text-bone font-medium text-[15px] leading-snug line-clamp-2">
-          {ability.name}
-        </p>
-        <p className="text-amber-300/80 text-[13px] mt-0.5">
-          Manual placeholder · needs source
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function LockedBanner({ level, gate }: { level: CardLevel; gate: LevelGate }) {
   return (
     <div
-      className="rounded-md border-2 border-dashed border-ember-700/40 bg-ink-900/40 p-5 text-center"
+      className="border-2 border-dashed border-ember-700/40 bg-ink-900/40 p-5 text-center"
       role="status"
     >
       <p className="font-display tracking-[0.18em] uppercase text-ember-400/80 text-[13px]">
@@ -109,9 +74,25 @@ function LevelSection({
     [abilities],
   );
 
+  const openLightbox = (a: Ability) => {
+    const idx = realInLevel.findIndex((x) => x.id === a.id);
+    if (idx !== -1) {
+      onOpenLightbox({ abilities: realInLevel, startIndex: idx });
+    }
+  };
+
+  // For Level 1 we render the very first card on its own row, centered
+  // and matched to a single grid-cell width. The remaining cards fall
+  // into the normal 2-column grid below it. (For non-Witch this means
+  // the cooldown-0 starter sits alone at the top; for the Witch it's
+  // the first basic ★ card. The "rest" layout is unchanged from before.)
+  const useSoloFirst = level === 1 && abilities.length > 1;
+  const first = useSoloFirst ? abilities[0] : null;
+  const restAbilities = useSoloFirst ? abilities.slice(1) : abilities;
+
   return (
     <section>
-      <h3 className="section-header font-display text-ember-400 tracking-wider uppercase text-sm mb-3 px-1">
+      <h3 className="section-header font-display text-accent tracking-wider uppercase text-[17px] mb-3 px-1">
         Level {level} Cards
       </h3>
       {!gate.revealed ? (
@@ -119,44 +100,23 @@ function LevelSection({
       ) : abilities.length === 0 ? (
         <EmptyLevelNote />
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {abilities.map((a) => (
-            <li key={a.id} className="contents">
-              {a.manualPlaceholder ? (
-                <PlaceholderTile ability={a} />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const idx = realInLevel.findIndex((x) => x.id === a.id);
-                    if (idx !== -1) {
-                      onOpenLightbox({
-                        abilities: realInLevel,
-                        startIndex: idx,
-                      });
-                    }
-                  }}
-                  className="rounded-md border border-ember-700/30 bg-ink-900/60 overflow-hidden text-left active:scale-[0.99] transition-transform"
-                  aria-label={`Open ${a.name} card full-screen`}
-                >
-                  <div className="relative aspect-[3/4] bg-ink-800">
-                    <PlaceholderImage
-                      src={a.cardImage}
-                      alt={a.name}
-                      className="absolute inset-0 h-full w-full object-contain p-2"
-                      fallbackLabel={a.name}
-                    />
-                  </div>
-                  <div className="p-3 border-t border-ember-700/20">
-                    <p className="text-bone font-medium text-[15px] leading-snug line-clamp-2">
-                      {a.name}
-                    </p>
-                    <p className="text-bone/60 text-[13px] mt-0.5">
-                      {a.cost ?? `Level ${a.level}`}
-                    </p>
-                  </div>
-                </button>
-              )}
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 list-none p-0 m-0">
+          {first ? (
+            // sm:col-span-2 makes this list-item take the full grid row.
+            // The inner div is sized to one grid cell width
+            // (calc(50% - half-of-gap)) and centered with flex.
+            <li className="sm:col-span-2 sm:flex sm:justify-center">
+              <div className="w-full sm:w-[calc(50%-0.375rem)]">
+                <CardTile
+                  ability={first}
+                  onClick={() => openLightbox(first)}
+                />
+              </div>
+            </li>
+          ) : null}
+          {restAbilities.map((a) => (
+            <li key={a.id}>
+              <CardTile ability={a} onClick={() => openLightbox(a)} />
             </li>
           ))}
         </ul>
@@ -169,13 +129,31 @@ export function CardsTab({ character }: Props) {
   const [lightbox, setLightbox] = useState<LightboxState>(null);
   const byLevel = useMemo(() => groupByLevel(character), [character]);
 
+  // Render every revealed level plus the FIRST sealed one as a "next
+  // up" hint. Levels beyond that are hidden so the page doesn't bloat
+  // with banners spoiling future progression milestones.
+  const visibleLevels = useMemo(() => {
+    const out: CardLevel[] = [];
+    let nextSealedShown = false;
+    for (const lvl of LEVELS) {
+      const gate = getLevelGate(character.slug, lvl);
+      if (gate.revealed) {
+        out.push(lvl);
+      } else if (!nextSealedShown) {
+        out.push(lvl);
+        nextSealedShown = true;
+      }
+    }
+    return out;
+  }, [character.slug]);
+
   return (
     <>
       <p className="text-bone/60 text-sm px-1 mb-3">
         Tap any card to view it full-screen. Swipe or use the arrows to browse.
       </p>
       <div className="space-y-6">
-        {LEVELS.map((level) => (
+        {visibleLevels.map((level) => (
           <LevelSection
             key={level}
             level={level}

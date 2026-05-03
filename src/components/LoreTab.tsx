@@ -14,7 +14,7 @@ export function LoreTab({ character }: Props) {
   }
   return (
     <article className="panel p-4">
-      <p className="text-bone/90 text-[16px] leading-relaxed whitespace-pre-line">
+      <p className="text-bone text-[16px] leading-relaxed whitespace-pre-line">
         {character.lore}
       </p>
     </article>

@@ -8,3 +8,10 @@ dist-ssr
 .vite
 .idea
 .vscode
+
+# TS incremental compile cache
+tsconfig.tsbuildinfo
+
+# Drop folder for scripts/import-hero-variants.mjs (images go straight
+# into public/characters after processing — _incoming/ is local only).
+_incoming/

@@ -34,30 +34,30 @@ match the `slug` field in [`src/data/characters.ts`](src/data/characters.ts).
 public/
   characters/
     warden/
-      art.jpg                # large hero image, used on the list and detail
+      cover.webp             # list-page tile (full)
+      cover.thumb.webp       # list-page tile (400w, used by app)
+      art.webp               # full-resolution hero (lightbox source)
+      art.medium.webp        # 1200w hero (used on character page)
+      art.mobile.webp        # OPTIONAL portrait-cropped variant (mobile hero)
+      art.desktop.webp       # OPTIONAL wide variant (desktop hero)
+      art.full.webp          # OPTIONAL explicit fullscreen variant
       cards/
-        01.png               # ability card images, in level1Abilities order
-        02.png
-        03.png
-        04.png
-        05.png
-        06.png
-        07.png
-    priest/
-      art.jpg
-      cards/
-        01.png
+        01_<slug>.webp       # level-1 card image (lightbox source)
+        01_<slug>.thumb.webp # level-1 card thumbnail (grid)
         ...
 ```
 
 Rules:
-* `art.<ext>` can be `.jpg`, `.jpeg`, or `.png`. The path is set explicitly per
-  character in `characters.ts` so any extension is fine.
-* Card images load from `cards/01.png`, `cards/02.png`, … in the same order
-  as `level1Abilities`. Missing images automatically fall back to a placeholder
-  panel — the app never crashes if files are absent.
+* All images are now WebP. Original PNG/JPG sources have been removed from
+  `public/characters/` to keep deploys lean (originals lived on disk for
+  one cycle as a safety net). To re-import a hero image, drop a new
+  `art.webp` and run `node scripts/generate-hero-medium.mjs` and
+  `node scripts/generate-thumbnails.mjs` to refresh derived variants.
+* Card images load from `cards/<NN>_<slug>.webp` (auto-derived from
+  `oathswornCanonicalDb.ts`). Missing images automatically fall back to
+  a placeholder panel — the app never crashes if a file is absent.
 * If you want to add lore for a character, set the `lore` string on that
-  entry in `characters.ts`. Empty `lore` shows "No lore added yet.".
+  entry in the canonical DB. Empty `lore` shows "No lore added yet.".
 
 ## 3. Production build
 
@@ -183,10 +183,17 @@ src/
     HomePage.tsx
     CharacterPage.tsx
 public/
-  characters/<slug>/art.{jpg,jpeg,png}        # large hero
-  characters/<slug>/cover.jpg                 # optional list thumbnail
-  characters/<slug>/cards/<NN>_<slug>.png     # level-1 card images
-  characters/<slug>/cards/level-{2,5,10,15}/<NN>_<slug>.png
+  characters/<slug>/cover.webp                # list-tile (full)
+  characters/<slug>/cover.thumb.webp          # list-tile (400w)
+  characters/<slug>/art.webp                  # hero source (lightbox)
+  characters/<slug>/art.medium.webp           # hero on character page
+  characters/<slug>/art.mobile.webp           # OPTIONAL mobile-cropped hero
+  characters/<slug>/art.desktop.webp          # OPTIONAL desktop hero
+  characters/<slug>/art.full.webp             # OPTIONAL fullscreen variant
+  characters/<slug>/cards/<NN>_<slug>.webp           # level-1 cards
+  characters/<slug>/cards/<NN>_<slug>.thumb.webp     # level-1 thumbs (grid)
+  characters/<slug>/cards/level-{2,5,10,15}/<NN>_<slug>.webp
+  characters/<slug>/cards/level-{2,5,10,15}/<NN>_<slug>.thumb.webp
   card-gallery.html        # static QA gallery for verifying card images
 ```
 
@@ -278,12 +285,14 @@ progresses. None of them require touching React component code.
 
 A character can have a dedicated cover image used on the list page
 (square-ish framing of the figure looks best). The adapter automatically
-looks for `public/characters/<slug>/cover.jpg`:
+looks for `public/characters/<slug>/cover.webp`:
 
-* If you drop a `cover.jpg` into the slug folder, the list card will use
-  it; the original `art.<ext>` keeps powering the full-screen hero.
+* If you drop a `cover.webp` into the slug folder, the list card will
+  use it; `art.webp` keeps powering the full-screen hero.
+* The list tile actually renders the 400w `cover.thumb.webp` variant
+  for fast paint — generate it via `node scripts/generate-thumbnails.mjs`.
 * If no cover exists, the list card transparently falls back to `art`.
-* To use a different filename or extension, set
+* To use a different filename, set
   `listImage: 'characters/<slug>/<filename>'` in
   [`src/data/characterMetadata.ts`](src/data/characterMetadata.ts).
 
@@ -346,12 +355,270 @@ You can also customise the locked-message string per level (e.g. switch
 
 When you have card images for L2/5/10/15:
 
-1. Drop the PNGs at
-   `public/characters/<slug>/cards/level-<N>/<NN>_<slug>.png` (the
+1. Drop the WebPs at
+   `public/characters/<slug>/cards/level-<N>/<NN>_<slug>.webp` (the
    adapter already auto-builds these paths from the canonical DB).
-2. Confirm the ability's `cardImage` path matches in
+2. Run `node scripts/generate-thumbnails.mjs` to create the matching
+   `*.thumb.webp` 400w variants used by the grid.
+3. Confirm the ability's `cardImage` path matches in
    `oathswornCanonicalDb.ts` — for the abilities marked
    `cardImage: null` in the canonical DB, the adapter falls back to a
    non-existent placeholder file. Set the path explicitly when you have
    a real image.
-3. Flip the matching gate in `levelGates.ts` to `revealed: true`.
+4. Flip the matching gate in `levelGates.ts` to `revealed: true`.
+
+## Content editing cheat sheet
+
+A flat reference of *exactly which file or folder* to touch for each
+kind of content change. None of these require code changes — drop a
+file or edit one line in a data file.
+
+The 12 character slugs / folders are listed at the end.
+
+### 1. Character list thumbnails / cover images
+
+Drop a file at:
+
+```
+public/characters/warden/cover.webp
+public/characters/priest/cover.webp
+public/characters/scar-tribe-exile/cover.webp
+```
+
+- If `cover.webp` exists, the list page uses it (400w
+  `cover.thumb.webp` is the actual rendered file — auto-generated by
+  `node scripts/generate-thumbnails.mjs`).
+- If it does not exist, the list page automatically falls back to
+  `art.webp`.
+- Want a different filename? Set `listImage` in
+  [`src/data/characterMetadata.ts`](src/data/characterMetadata.ts):
+
+```ts
+warden: {
+  listImage: 'characters/warden/cover-square.webp',
+}
+```
+
+### 2. Main character art / hero images
+
+Drop the files at:
+
+```
+public/characters/warden/art.webp           # lightbox source (always used)
+public/characters/warden/art.medium.webp    # default hero (auto-generated 1200w)
+public/characters/warden/art.mobile.webp    # OPTIONAL portrait-cropped hero
+public/characters/warden/art.desktop.webp   # OPTIONAL wide hero
+public/characters/warden/art.full.webp      # OPTIONAL explicit fullscreen master
+```
+
+How the variants are picked:
+
+| Surface                            | Source (with fallbacks)                                  |
+|------------------------------------|----------------------------------------------------------|
+| Mobile character-page hero         | `heroArtMobile` → `heroArtDesktop` → `art.medium.webp`   |
+| Desktop character-page hero        | `heroArtDesktop` → `art.medium.webp`                     |
+| Fullscreen lightbox (tap on hero)  | `heroArtFull` → `heroArtDesktop` → `art.webp`            |
+
+`heroArtMobile` / `heroArtDesktop` / `heroArtFull` are optional fields
+on the `CharacterMetadata` entry. Add them only when you have purpose-
+built variants — characters without overrides keep working from the
+single `art.webp` (and its auto-generated `art.medium.webp`).
+
+```ts
+'warden': {
+  heroArtMobile: 'characters/warden/art.mobile.webp',
+  heroArtDesktop: 'characters/warden/art.desktop.webp',
+  heroArtFull: 'characters/warden/art.full.webp',
+},
+```
+
+The mobile/desktop crop position is controlled separately in the same
+file:
+
+```ts
+'thracian-blade': {
+  heroObjectPositionMobile: '40% center',
+  heroObjectPositionDesktop: 'center center',
+}
+```
+
+Defaults if you don't set them: mobile `25% center` (left-biased so the
+figure stays visible on phones), desktop `center center`.
+
+**Mobile fullscreen rotation**: when a portrait phone opens a
+landscape full-art (`art.full.webp` / `art.webp`), the lightbox
+automatically rotates the image 90° and fits it to the screen so the
+character fills the viewport instead of leaving black bars top/bottom.
+No config needed — it's based on viewport vs. natural-image dimensions.
+
+### 3. CD 0 Core Card images
+
+Drop the file at:
+
+```
+public/characters/warden/cards/level-1/00_manual_cd0.webp
+public/characters/priest/cards/level-1/00_manual_cd0.webp
+```
+
+The CD 0 card text/data is edited in:
+
+- [`src/data/manualAbilityFillTemplate.ts`](src/data/manualAbilityFillTemplate.ts) — TypeScript source, recommended.
+- [`src/data/manualAbilityFillTemplate.json`](src/data/manualAbilityFillTemplate.json) — JSON mirror, edit if you'd rather stay outside TS.
+- [`src/data/manualAbilityFillChecklist.md`](src/data/manualAbilityFillChecklist.md) — printable checklist with the exact ability id and image path for each character.
+
+Example entry — **placeholder values only, do not copy verbatim**:
+
+```ts
+{
+  characterSlug: "warden",
+  abilityId: "warden-l1-cd0-starter-placeholder",
+  fillName: "Example Card Name",
+  fillCost: "1",
+  fillDefense: "2",
+  fillShortSummary: "Short readable summary here.",
+  fillFullText: "Full card text here.",
+  fillCardImage: "/characters/warden/cards/level-1/00_manual_cd0.webp",
+  verified: true,
+}
+```
+
+Do not invent card names. Card names like "Measured Blow" must come
+from a verified source — until you have one, leave `fillName: ""` and
+the placeholder tile keeps showing.
+
+### 4. Level 1 ability card images
+
+Drop files at:
+
+```
+public/characters/warden/cards/01_claimed_ground.webp
+public/characters/warden/cards/02_guard.webp
+public/characters/warden/cards/03_chain_drag.webp
+…
+```
+
+These appear in the **Cards** tab under "Level 1 Cards". The CD 0 card
+is *not* shown here anymore — it lives in the **Summary** tab as the
+"CD 0 Core Card" panel.
+
+The current canonical paths used by each ability live in
+[`src/data/oathswornCanonicalDb.ts`](src/data/oathswornCanonicalDb.ts).
+The default scheme is `cards/<NN>_<slug>.webp`. After dropping a new
+card image, run `node scripts/generate-thumbnails.mjs` to derive the
+400w `*.thumb.webp` variant the grid uses.
+
+Optional explicit per-card overrides on each `Ability`:
+
+| Field               | Used by             | Default                          |
+|---------------------|---------------------|----------------------------------|
+| `cardImage`         | both (final fallback)| auto-derived from name           |
+| `cardImageThumb`    | grid (CardTile)     | `cardImage` with `.thumb.webp`   |
+| `cardImageFull`     | lightbox            | `cardImage`                      |
+
+### 5. Future unlock cards: Level 2 / 5 / 10 / 15
+
+Drop files at:
+
+```
+public/characters/warden/cards/level-2/01_as_one.webp
+public/characters/warden/cards/level-5/01_reflection.webp
+public/characters/warden/cards/level-10/01_intervention.webp
+public/characters/warden/cards/level-15/01_hold_the_line.webp
+```
+
+After adding a new image, run `node scripts/generate-thumbnails.mjs` to
+generate the matching `*.thumb.webp` for the grid.
+
+Visibility (whether the section is "Sealed" or shows real cards) is
+controlled in
+[`src/data/levelGates.ts`](src/data/levelGates.ts):
+
+- **Unlock a level for everyone** — flip `revealed: true` on the matching
+  key in `defaultLevelGates`.
+- **Unlock a level for one character only** — add to
+  `perCharacterOverrides`:
+
+```ts
+export const perCharacterOverrides = {
+  warden: { 2: { revealed: true } },
+};
+```
+
+- The locked banner text (e.g. *"Unlock Chapter II to view"*) is the
+  `lockedMessage` field on each gate. Edit it to match the campaign
+  wording you actually use.
+
+### 6. Character text: Special Ability, Can Equip, Playstyle, Lore
+
+The single source of truth for character prose is:
+
+[`src/data/oathswornCanonicalDb.ts`](src/data/oathswornCanonicalDb.ts)
+
+Each character entry has the following fields you can edit directly:
+
+| What you want to change | Field |
+| --- | --- |
+| Special Ability (title + text, supports multiple) | `specialAbility` |
+| Can Equip | `canEquip` |
+| Playstyle (the paragraph under the role) | `playstyle` |
+| Role (one-line subtitle on the list and hero) | `role` |
+| Lore / background (Lore tab) | `lore` *(currently unset for all 12 characters)* |
+| Display name (asset-friendly name shown in UI) | `displayName` |
+
+Ability text lives on each ability inside the same character object:
+
+| Per-ability field | Field |
+| --- | --- |
+| Ability name | `name` |
+| Short summary (Cards / Summary tab) | `shortSummary` |
+| Full card rules text (shown in lightbox / detail) | `fullText` |
+| Cooldown badge | `cooldown` |
+| Override the auto-generated card image path | `cardImage` |
+| Optional thumbnail used in Cards-tab grid | `cardImageThumb` |
+| Optional full-resolution master used in lightbox | `cardImageFull` |
+
+The CD 0 starter card is special — its text is filled via
+[`src/data/manualAbilityFillTemplate.ts`](src/data/manualAbilityFillTemplate.ts)
+(see section 3), not in the canonical DB. The override loader applies
+those values on top of the placeholder at runtime.
+
+Presentational metadata (list images, hero focal points, search tags)
+is in
+[`src/data/characterMetadata.ts`](src/data/characterMetadata.ts).
+
+### 7. Hidden search tags
+
+Edit [`src/data/characterMetadata.ts`](src/data/characterMetadata.ts):
+
+```ts
+warden: {
+  searchTags: ["tank", "shield", "taunt", "control"],
+}
+```
+
+The search box already matches against name, role, playstyle, equipment
+text (`canEquip`), every ability name, and special-ability titles —
+`searchTags` is for *additional* synonyms that wouldn't otherwise hit
+(e.g. "summoner" → Grove Maiden, "noble" → Huntress). The user never
+sees the tags — they only widen which queries match.
+
+### 8. Full list of character slugs / folders
+
+```
+warden                -> public/characters/warden/
+ursus-warbear         -> public/characters/ursus-warbear/
+witch                 -> public/characters/witch/
+priest                -> public/characters/priest/
+adendri-ranger        -> public/characters/adendri-ranger/
+scar-tribe-exile      -> public/characters/scar-tribe-exile/
+cur                   -> public/characters/cur/
+penitent              -> public/characters/penitent/
+avi-harbinger         -> public/characters/avi-harbinger/
+thracian-blade        -> public/characters/thracian-blade/
+adendri-grove-maiden  -> public/characters/adendri-grove-maiden/
+huntress              -> public/characters/huntress/
+```
+
+The slug is what every data file matches on (`characterSlug`,
+`perCharacterOverrides`, the metadata map keys, etc.). Do not rename
+folders without also updating those keys.

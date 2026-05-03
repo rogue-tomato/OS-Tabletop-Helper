@@ -98,7 +98,8 @@ export function CardLightbox({ abilities, startIndex, onClose }: Props) {
       >
         <PlaceholderImage
           key={ability.id}
-          src={ability.cardImage}
+          src={ability.cardImageFull ?? ability.cardImage}
+          fallbackSrc={ability.cardImage}
           alt={ability.name}
           loading="eager"
           className="max-h-[78vh] max-w-full w-auto h-auto object-contain rounded-xl shadow-2xl"

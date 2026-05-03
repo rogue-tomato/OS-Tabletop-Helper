@@ -10,7 +10,15 @@ export type Ability = {
   cost?: string;
   summary: string;
   fullText?: string;
+  /** Default card image. Used as the fallback for both grid and
+   *  lightbox if the explicit thumb/full overrides aren't provided. */
   cardImage: string;
+  /** Optional explicit ~400w thumbnail for the grid. If omitted,
+   *  CardTile derives it via `thumbUrl(cardImage)`. */
+  cardImageThumb?: string;
+  /** Optional explicit full-resolution image for the lightbox. If
+   *  omitted, CardLightbox falls back to `cardImage`. */
+  cardImageFull?: string;
   needsVerification?: boolean;
   manualPlaceholder?: boolean;
 };
@@ -31,6 +39,15 @@ export type Character = {
    *  awkward crops. */
   heroObjectPositionMobile?: string;
   heroObjectPositionDesktop?: string;
+  /** Optional explicit mobile (portrait/cropped) hero variant for the
+   *  character detail page. Falls back to `heroArtDesktop` then `art`. */
+  heroArtMobile?: string;
+  /** Optional explicit desktop (wide/landscape) hero variant. Falls
+   *  back to `art`. */
+  heroArtDesktop?: string;
+  /** Optional explicit full-resolution variant for the fullscreen
+   *  lightbox. Falls back to `heroArtDesktop` then `art`. */
+  heroArtFull?: string;
   specialAbility: SpecialAbility[];
   canEquip: string;
   abilities: Ability[];

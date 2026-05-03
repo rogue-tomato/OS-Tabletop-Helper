@@ -57,7 +57,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/warden/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/warden/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -71,7 +71,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/ursus-warbear/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/ursus-warbear/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -85,7 +85,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/priest/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/priest/cards/level-1/00_manual_cd0.webp',
     notes:
       'Fill manually from a verified source. PDF prose mentions an extra adjacent HP-transfer option on this card.',
   },
@@ -100,7 +100,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/adendri-ranger/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/adendri-ranger/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -114,7 +114,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/scar-tribe-exile/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/scar-tribe-exile/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -128,7 +128,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/cur/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/cur/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -142,7 +142,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/penitent/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/penitent/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -156,7 +156,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/avi-harbinger/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/avi-harbinger/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -170,7 +170,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/thracian-blade/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/thracian-blade/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
   {
@@ -185,7 +185,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillShortSummary: '',
     fillFullText: '',
     fillCardImage:
-      '/characters/adendri-grove-maiden/cards/level-1/00_manual_cd0.png',
+      '/characters/adendri-grove-maiden/cards/level-1/00_manual_cd0.webp',
     notes:
       'Fill manually from a verified source. PDF prose says the Grove Maiden\'s 0-cooldown card also lets her place Sentinels and attack with them.',
   },
@@ -200,7 +200,7 @@ export const manualAbilityFillTemplate: ManualAbilityFillEntry[] = [
     fillCooldown: 0,
     fillShortSummary: '',
     fillFullText: '',
-    fillCardImage: '/characters/huntress/cards/level-1/00_manual_cd0.png',
+    fillCardImage: '/characters/huntress/cards/level-1/00_manual_cd0.webp',
     notes: 'Fill manually from a verified source.',
   },
 ];

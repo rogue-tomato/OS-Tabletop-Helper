@@ -10,6 +10,7 @@ type Props = {
   className?: string;
   fallbackLabel?: string;
   loading?: 'eager' | 'lazy';
+  decoding?: 'sync' | 'async' | 'auto';
 };
 
 export function PlaceholderImage({
@@ -19,6 +20,7 @@ export function PlaceholderImage({
   className,
   fallbackLabel,
   loading = 'lazy',
+  decoding = 'async',
 }: Props) {
   const [currentSrc, setCurrentSrc] = useState(src);
   const [errored, setErrored] = useState(false);
@@ -47,7 +49,7 @@ export function PlaceholderImage({
       src={assetUrl(currentSrc)}
       alt={alt}
       loading={loading}
-      decoding="async"
+      decoding={decoding}
       onError={() => {
         if (fallbackSrc && currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);

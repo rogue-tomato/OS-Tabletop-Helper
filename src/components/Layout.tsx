@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { ScrollToTopButton } from './ScrollToTopButton';
 
 type Props = {
   children: ReactNode;
@@ -10,8 +11,8 @@ type Props = {
 export function Layout({ children, showBack, title }: Props) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-30 backdrop-blur-md bg-ink-950/85 border-b border-ember-700/20">
-        <div className="mx-auto max-w-screen-md px-4 py-3 flex items-center gap-3">
+      <header className="sticky top-0 z-30 backdrop-blur-md bg-ink-950/70 border-b border-ember-700/20">
+        <div className="mx-auto max-w-screen-md px-4 flex items-center gap-3 min-h-[60px]">
           {showBack ? (
             <Link
               to="/"
@@ -33,14 +34,15 @@ export function Layout({ children, showBack, title }: Props) {
               </svg>
             </Link>
           ) : null}
-          <h1 className="font-display text-lg sm:text-xl text-ember-400 tracking-widest uppercase">
+          <h1 className="font-display font-bold text-lg sm:text-xl text-ember-400 tracking-widest uppercase">
             {title ?? 'Oathsworn'}
           </h1>
         </div>
       </header>
-      <main className="mx-auto max-w-screen-md w-full px-4 py-4 flex-1 safe-bottom">
+      <main className="mx-auto max-w-screen-md w-full px-4 pt-4 pb-[max(6rem,env(safe-area-inset-bottom))] flex-1">
         {children}
       </main>
+      <ScrollToTopButton />
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function SearchInput({ value, onChange, placeholder }: Props) {
           value={value}
           onChange={(e) => onChange(e.currentTarget.value)}
           placeholder={placeholder ?? 'Search characters…'}
-          className="w-full rounded-xl bg-ink-800/70 border border-ember-700/30 pl-10 pr-4 py-3 text-base text-bone placeholder:text-bone/40 focus:outline-none focus:border-ember-500 focus:ring-2 focus:ring-ember-500/30"
+          className="w-full rounded-none bg-ink-800/70 border border-ember-700/30 pl-10 pr-4 py-3 text-base text-bone placeholder:text-bone/40 focus:outline-none focus:border-ember-500 focus:ring-2 focus:ring-ember-500/30"
         />
       </div>
     </label>

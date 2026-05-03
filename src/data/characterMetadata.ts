@@ -10,7 +10,7 @@
 
 export type CharacterMetadata = {
   /** Path under `public/` for the list-page thumbnail. The adapter
-   *  defaults this to `characters/<slug>/cover.jpg`; if no such file
+   *  defaults this to `characters/<slug>/cover.webp`; if no such file
    *  exists in `public/`, the UI gracefully falls back to `art`. */
   listImage?: string;
   /** CSS `object-position` for the hero on narrow screens. Defaults to
@@ -20,6 +20,19 @@ export type CharacterMetadata = {
   /** CSS `object-position` for the hero on wide screens. Defaults to
    *  "center center". */
   heroObjectPositionDesktop?: string;
+  /** Optional explicit mobile-cropped hero variant (portrait-friendly).
+   *  CharacterPage uses this on narrow viewports if set; otherwise it
+   *  falls back to `heroArtDesktop`, then to the regular `art` field
+   *  (resized to a medium-resolution variant for fast paint). */
+  heroArtMobile?: string;
+  /** Optional explicit desktop hero variant (wide/landscape framing).
+   *  CharacterPage uses this on wide viewports if set; otherwise the
+   *  default medium variant of `art` is used. */
+  heroArtDesktop?: string;
+  /** Optional explicit full-resolution variant shown when the user
+   *  taps the hero to open the lightbox. Falls back to
+   *  `heroArtDesktop`, then to `art`. */
+  heroArtFull?: string;
   /** Hidden search tags. Free-form lowercase strings — added to the
    *  search haystack so users can find a character by themes/synonyms
    *  that aren't in the visible role/playstyle text. */
@@ -32,42 +45,54 @@ export const HERO_DEFAULT_DESKTOP = 'center center';
 
 export const metadata: Record<string, CharacterMetadata> = {
   warden: {
+    heroArtMobile: 'characters/warden/art.mobile.webp',
     searchTags: ['inquisitor', 'tank', 'shield', 'chain', 'taunt'],
   },
   'ursus-warbear': {
+    heroArtMobile: 'characters/ursus-warbear/art.mobile.webp',
     searchTags: ['warbear', 'beast', 'predator', 'apex'],
   },
   witch: {
+    heroArtMobile: 'characters/witch/art.mobile.webp',
     searchTags: ['sorcery', 'mage', 'caster', 'fire', 'ice', 'lightning', 'spell', 'aoe'],
   },
   priest: {
+    heroArtMobile: 'characters/priest/art.mobile.webp',
     searchTags: ['cleric', 'healer', 'monk', 'faith', 'hammer', 'support'],
   },
   'adendri-ranger': {
+    heroArtMobile: 'characters/adendri-ranger/art.mobile.webp',
     searchTags: ['archer', 'sniper', 'woodland', 'ranged'],
   },
   'scar-tribe-exile': {
     // The Exile's artwork composition centers the figure differently —
     // keep the default centered crop instead of biasing left.
     heroObjectPositionMobile: 'center center',
+    heroArtMobile: 'characters/scar-tribe-exile/art.mobile.webp',
     searchTags: ['barbarian', 'tribal', 'berserker', 'rage', 'crit'],
   },
   cur: {
+    heroArtMobile: 'characters/cur/art.mobile.webp',
     searchTags: ['assassin', 'thief', 'rogue', 'shadow', 'poison', 'sneak'],
   },
   penitent: {
+    heroArtMobile: 'characters/penitent/art.mobile.webp',
     searchTags: ['holy', 'crusader', 'paladin', 'sacrifice'],
   },
   'avi-harbinger': {
+    heroArtMobile: 'characters/avi-harbinger/art.mobile.webp',
     searchTags: ['avian', 'oracle', 'fate', 'predict', 'foresight'],
   },
   'thracian-blade': {
+    heroArtMobile: 'characters/thracian-blade/art.mobile.webp',
     searchTags: ['gladiator', 'arena', 'duelist', 'parry', 'sword'],
   },
   'adendri-grove-maiden': {
+    heroArtMobile: 'characters/adendri-grove-maiden/art.mobile.webp',
     searchTags: ['summoner', 'wychwood', 'sentinel', 'guardian', 'turret'],
   },
   huntress: {
+    heroArtMobile: 'characters/huntress/art.mobile.webp',
     searchTags: ['noble', 'falconer', 'falcon', 'trap', 'archery'],
   },
 };
