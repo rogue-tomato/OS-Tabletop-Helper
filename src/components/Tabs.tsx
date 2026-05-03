@@ -25,10 +25,10 @@ export function Tabs<T extends string>({ tabs, active, onChange }: Props<T>) {
             aria-selected={isActive}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`flex-1 basis-0 min-w-0 min-h-[44px] px-2 sm:px-3 py-2 text-center whitespace-nowrap text-[12px] sm:text-[15px] font-display tracking-[0.08em] sm:tracking-[0.18em] uppercase transition-colors ${
+            className={`flex-1 basis-0 min-w-0 min-h-[44px] px-2 sm:px-3 py-2 text-center whitespace-nowrap text-[12px] sm:text-[15px] font-display tracking-[0.08em] sm:tracking-[0.18em] uppercase ${
               isActive
                 ? 'bg-gradient-to-b from-tab-active-400 to-tab-active-500 text-ink-950 shadow-ember'
-                : 'text-bone/70 hover:text-ember-400'
+                : 'text-bone/70'
             }`}
           >
             {tab.label}

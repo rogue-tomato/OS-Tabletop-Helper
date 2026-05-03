@@ -39,9 +39,11 @@
 
 @layer components {
   /* Standard parchment/iron panel — sharper than before, with a subtle
-     inner frame line so it reads as engraved rather than card-flat. */
+     inner frame line so it reads as engraved rather than card-flat.
+     Solid bg (no backdrop-filter) so mobile doesn't repaint a blur
+     layer every time the tab content swaps under it. */
   .panel {
-    @apply border border-ember-700/40 bg-ink-900/75 backdrop-blur-md shadow-lg;
+    @apply border border-ember-700/40 bg-ink-900/90 shadow-lg;
     position: relative;
   }
   .panel::after {
@@ -52,13 +54,13 @@
     pointer-events: none;
   }
   .panel-soft {
-    @apply border border-ember-700/25 bg-ink-900/55 backdrop-blur-sm;
+    @apply border border-ember-700/25 bg-ink-900/80;
   }
   /* Trading-card-style tile for the character list. Fully square
      corners with L-shape silver-sage corner brackets so the cards feel
      framed/etched rather than generic rounded UI. */
   .ornate-card {
-    @apply border border-ember-700/35 bg-ink-900/70 backdrop-blur-md shadow-lg;
+    @apply border border-ember-700/35 bg-ink-900/85 shadow-lg;
     position: relative;
   }
   .ornate-card::before,
