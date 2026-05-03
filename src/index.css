@@ -27,18 +27,17 @@
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  /* Fixed full-viewport backdrop. Pinned to the LARGE viewport
-     dimensions (`100lvh`) so iOS Safari doesn't shrink/scale it when
-     the on-screen keyboard appears. `100vh` is the fallback for
-     browsers without `lvh` units. Sits behind every layer (z-index
-     -1) and never scrolls with the document. */
+  /* Fixed full-viewport backdrop. Width/height are set in JS to
+     `screen.width` / `screen.height` (see App.tsx) so the bg can't
+     follow the visual viewport when the on-screen keyboard pops up
+     on iOS. CSS values here are the initial-flash fallback before JS
+     applies. */
   .app-bg {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    height: 100lvh;
     z-index: -1;
     background-image: var(--forest-bg-url);
     background-size: cover;

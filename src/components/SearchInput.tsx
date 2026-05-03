@@ -14,8 +14,12 @@ export function SearchInput({ value, onChange, placeholder }: Props) {
     <form
       role="search"
       onSubmit={(e) => {
+        // Stop the browser from doing a real form navigation. We
+        // deliberately don't `blur()` the input here — on iOS that
+        // triggered an extra zoom-out animation when the keyboard
+        // collapsed after pressing Search/Go. Tap-outside dismisses
+        // the keyboard naturally.
         e.preventDefault();
-        (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.blur();
       }}
       className="block"
     >
