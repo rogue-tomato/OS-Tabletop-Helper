@@ -4,28 +4,62 @@ import { HomePage } from './pages/HomePage';
 import { CharacterPage } from './pages/CharacterPage';
 
 export default function App() {
-  // The fixed backdrop's pixel dimensions are pinned to `screen.width`
-  // / `screen.height` rather than `100lvh` / `100vw`. iOS Safari
-  // resolves CSS viewport units against the visual viewport when the
-  // on-screen keyboard appears and shrinks the bg accordingly; using
-  // a stable physical-screen size means the keyboard can't touch it.
+  // The fixed backdrop is pinned to physical screen dimensions and
+  // counter-translated against the Visual Viewport so the on-screen
+  // keyboard can't shift or shrink it. iOS Safari does two things
+  // when the keyboard pops up:
+  //   1. The visual viewport shrinks by the keyboard height.
+  //   2. The layout viewport scrolls up so the focused input stays
+  //      visible above the keyboard — and `position: fixed` elements
+  //      ride along with it, which is what the user perceived as the
+  //      bg "jumping up to lay on the keyboard's top edge".
+  // We cancel that by setting `transform: translate(offsetLeft,
+  // offsetTop)` on the bg, where the offsets come from
+  // `window.visualViewport`. The end result: the backdrop never
+  // moves, never resizes, regardless of keyboard / URL bar / pinch
+  // zoom.
   const bgRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = bgRef.current;
     if (!el) return;
-    const apply = () => {
-      // Some Android WebViews report 0 for screen dims briefly —
-      // fall back to innerWidth/Height in that case.
+    const applySize = () => {
       const w = window.screen?.width || window.innerWidth;
       const h = window.screen?.height || window.innerHeight;
       el.style.width = `${w}px`;
       el.style.height = `${h}px`;
     };
-    apply();
-    // Re-apply after orientation flip — screen.width / .height swap.
-    const onOrient = () => window.setTimeout(apply, 150);
+    applySize();
+
+    const vv = window.visualViewport;
+    const syncOffset = () => {
+      if (!vv) return;
+      const ox = vv.offsetLeft || 0;
+      const oy = vv.offsetTop || 0;
+      // translate3d hits the GPU compositor so iOS doesn't have to
+      // re-rasterise the bg on every scroll event during keyboard
+      // animation.
+      el.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
+    };
+    syncOffset();
+
+    const onOrient = () => {
+      window.setTimeout(() => {
+        applySize();
+        syncOffset();
+      }, 150);
+    };
     window.addEventListener('orientationchange', onOrient);
-    return () => window.removeEventListener('orientationchange', onOrient);
+    if (vv) {
+      vv.addEventListener('scroll', syncOffset);
+      vv.addEventListener('resize', syncOffset);
+    }
+    return () => {
+      window.removeEventListener('orientationchange', onOrient);
+      if (vv) {
+        vv.removeEventListener('scroll', syncOffset);
+        vv.removeEventListener('resize', syncOffset);
+      }
+    };
   }, []);
 
   return (
