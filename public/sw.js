@@ -15,7 +15,7 @@
 // shell for instant paint, then refresh the cache from the network so
 // the next visit picks up new bundle hashes.
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE_NAME = `oathsworn-helper-${VERSION}`;
 
 // Minimal precache — just the entry HTML so the very first install has

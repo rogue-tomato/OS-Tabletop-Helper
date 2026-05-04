@@ -7,7 +7,8 @@ import { SortMenu, type SortMode } from '../components/SortMenu';
 import { characters } from '../data/characters';
 import { assetUrl, mediumUrl, thumbUrl } from '../lib/assets';
 import { preloadImageEager } from '../lib/prefetch';
-import type { Character } from '../types';
+import { getLevelGate, type CardLevel } from '../data/levelGates';
+import type { Ability, Character } from '../types';
 
 const SCROLL_KEY = 'home-scroll-y';
 const SORT_KEY = 'home-sort-mode';
@@ -147,13 +148,18 @@ export function HomePage() {
       const cover = c.listImage ?? c.art;
       preloadImageEager(assetUrl(thumbUrl(cover)));
 
-      // Card thumbs for the current character (revealed levels only —
-      // hidden levels like Level 2 are skipped automatically because
-      // their abilities are still in `unlockedAbilities`, but we don't
-      // gate by `levelGates` here on purpose so all transcribed cards
-      // get into the SW cache).
-      const allCards = [...c.abilities, ...(c.unlockedAbilities ?? [])];
+      // Card thumbs for the current character. Skip:
+      //   * manual-placeholder abilities — their `cardImage` resolves to
+      //     `cards/missing.webp` which doesn't exist on disk
+      //   * abilities whose level is `hidden: true` in levelGates — those
+      //     cards aren't rendered anywhere in the UI yet (Level 2 today)
+      //   * abilities with no real cardImage (defensive)
+      const allCards: Ability[] = [...c.abilities, ...(c.unlockedAbilities ?? [])];
       for (const a of allCards) {
+        if (a.manualPlaceholder) continue;
+        if (!a.cardImage || a.cardImage.endsWith('/missing.webp')) continue;
+        const lvl = a.level as CardLevel;
+        if (getLevelGate(c.slug, lvl).hidden) continue;
         const thumb = a.cardImageThumb ?? thumbUrl(a.cardImage);
         preloadImageEager(assetUrl(thumb));
       }

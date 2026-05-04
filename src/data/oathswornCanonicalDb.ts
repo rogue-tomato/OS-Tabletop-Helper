@@ -1687,6 +1687,9 @@ Only some have the strength to pay that price. Those that do, emerge from the Co
       // is no longer in the L1 hand. Its current placement is unknown.
       {
         name: 'Weapon Throw',
+        // File ships as 02_weapon_throw.webp — slot 01 in level-2/ is
+        // the dead 1st-edition Master Parry asset (now an L1 starter).
+        positionInLevel: 2,
         shortSummary:
           'Throw your weapon for big damage — in Viper stance, throw it while running, impale a foe, and retrieve it before it hits the ground.',
         needsVerification: false,
