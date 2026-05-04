@@ -1,261 +1,224 @@
 # SAVEPOINT — pick up here in a fresh session
 
-Last session ran out of tokens after the iron/silver/sage palette + forest
-backdrop pass landed. Build is **green** and dev server was running on
-http://localhost:5173/ when the session ended.
+Last session ran out (image quota). Project is **live and shipping**:
+https://rogue-tomato.github.io/OS-Tabletop-Helper/ — also runs as a
+Telegram Mini App via `@os_tabletop_helper_bot` (BotFather → /newapp →
+short name picked, see "Telegram" section below).
 
-Below is everything the next assistant needs.
+Latest commit on `main`: `86eae55` "Dismiss keyboard on Enter via
+onKeyDown, not onSubmit". Build is **green**, gh-pages branch is up
+to date.
 
 ---
 
 ## Project context (read first)
 
-- Repo: `C:\Git\OS Tabletop Helper` — private GitHub: `rogue-tomato/OS-Tabletop-Helper`
-- Stack: Vite + React 18 + TS + Tailwind 3, HashRouter
-- Communication is in **Russian** (English only for code identifiers / file paths / game terms — see `~/.claude/projects/C--Users-newze/memory/MEMORY.md`)
-- PowerShell needs `$env:Path = "C:\Program Files\nodejs;" + $env:Path` prepended before `& "C:\Program Files\nodejs\npm.cmd" run …`
-- Build with `npm.cmd run build` after every batch of changes
-- Dev server: `npm.cmd run dev` (background it, the user opens it in Firefox)
+- Repo: `C:\Git\OS Tabletop Helper` — public GitHub:
+  `rogue-tomato/OS-Tabletop-Helper`
+- Live URL: https://rogue-tomato.github.io/OS-Tabletop-Helper/
+- Stack: Vite 5 + React 18 + TypeScript + Tailwind 3, HashRouter
+- Service Worker (`public/sw.js`) handles caching — second-load is
+  instant; **bump `VERSION` in sw.js** when shipping breaking asset
+  changes so users invalidate their cache
+- Communication is in **Russian** (English only for code identifiers
+  / file paths / game terms — see
+  `~/.claude/projects/C--Users-newze/memory/MEMORY.md`)
 
-### Key data files
-- [`src/data/oathswornCanonicalDb.ts`](src/data/oathswornCanonicalDb.ts) — single source of truth for character/ability data
-- [`src/data/characters.ts`](src/data/characters.ts) — adapter that legacy UI consumes; reshapes canonical DB
-- [`src/data/characterMetadata.ts`](src/data/characterMetadata.ts) — search tags, hero focal points, list image overrides
-- [`src/data/levelGates.ts`](src/data/levelGates.ts) — which Cards-tab levels are revealed vs locked
-- [`src/data/manualAbilityFillTemplate.ts`](src/data/manualAbilityFillTemplate.ts) — manual-fill workflow (mostly inert now that 2nd-edition L1 cards are populated)
+### Tooling notes (Windows specifics)
+- Bash: prefix node bin with `PATH="/c/Program Files/nodejs:$PATH"`
+- PowerShell: `$env:Path = "C:\Program Files\nodejs;" + $env:Path`
+- **VITE_BASE on Bash gets eaten by MSYS** (`/OS-Tabletop-Helper/` →
+  `C:/Program Files/Git/OS-Tabletop-Helper/`). Build through
+  PowerShell or use `MSYS_NO_PATHCONV=1`.
+- `dist/` sometimes stays locked by Defender / preview server —
+  build into `dist-deploy/` instead (see Deploy cycle).
 
-### Key UI files
-- [`src/pages/HomePage.tsx`](src/pages/HomePage.tsx) — list/search page
-- [`src/pages/CharacterPage.tsx`](src/pages/CharacterPage.tsx) — detail page (hero, tabs, lightbox)
-- [`src/components/Layout.tsx`](src/components/Layout.tsx) — shared header (`title`, optional back button)
-- [`src/components/Tabs.tsx`](src/components/Tabs.tsx) — Summary / Cards / Lore tab switcher
-- [`src/components/SearchInput.tsx`](src/components/SearchInput.tsx) — search input UI
-- [`src/components/CharacterCard.tsx`](src/components/CharacterCard.tsx) — list card tile
-- [`src/components/SummaryTab.tsx`](src/components/SummaryTab.tsx) — Available Equipment / Special Ability / Playstyle (in this order)
-- [`src/components/CardsTab.tsx`](src/components/CardsTab.tsx) — per-level card grid (cd 0 starter centered first row)
-- [`src/components/LoreTab.tsx`](src/components/LoreTab.tsx) — lore text panel
-- [`src/components/ArtLightbox.tsx`](src/components/ArtLightbox.tsx) — full-screen hero
-- [`src/components/CardLightbox.tsx`](src/components/CardLightbox.tsx) — full-screen card
+---
+
+## Deploy cycle (full)
+
+```powershell
+# In PowerShell
+Set-Location "C:\Git\OS Tabletop Helper"
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+$env:VITE_BASE = "/OS-Tabletop-Helper/"
+& "C:\Program Files\nodejs\npm.cmd" exec -- vite build --outDir dist-deploy
+```
+
+Then in bash:
+```bash
+cd "C:/Git/OS Tabletop Helper"
+git add -A && git commit -m "..."   # use HEREDOC for clean message
+git push origin main
+PATH="/c/Program Files/nodejs:$PATH" npm.cmd exec -- gh-pages -d dist-deploy
+```
+
+Live updates within ~30-60 s. SW invalidation requires a hard reload
+(or close+reopen Mini App) on the user side unless `VERSION` bumped
+in sw.js.
+
+`dist-deploy/` is git-ignored. Don't commit it to main.
+
+---
+
+## Telegram Mini App
+
+- Bot: `@os_tabletop_helper_bot`
+- Web App URL configured in BotFather → `/newapp` → trailing `/`
+  matters
+- Menu Button: BotFather → `/mybots` → Bot Settings → Menu Button →
+  same URL
+- Hash routing means deep links like `/#/character/warden` work
+
+---
+
+## Architecture
+
+### Data layer (canonical → adapter → UI)
+- [`src/data/oathswornCanonicalDb.ts`](src/data/oathswornCanonicalDb.ts) — single source of truth: characters, abilities, lore, cooldown / animusCost, optional `cardImageThumb` / `cardImageFull`
+- [`src/data/characters.ts`](src/data/characters.ts) — adapter, reshapes canonical DB to the legacy `Character` shape the UI consumes
+- [`src/data/characterMetadata.ts`](src/data/characterMetadata.ts) — per-slug presentational overrides: `listName`, `complexity` (1-5), `searchTags`, `heroObjectPositionMobile/Desktop`, `heroArtMobile/Desktop/Full`
+- [`src/data/levelGates.ts`](src/data/levelGates.ts) — `revealed` flag per level (1/2/5/10/15) + per-character overrides; **Level 2 is currently `hidden: true`** until the card-builder lands
+- [`src/data/manualAbilityFillTemplate.ts`](src/data/manualAbilityFillTemplate.ts) — manual-fill workflow for the 11 cd-0 starters; mostly inert now
+
+### Pages
+- [`src/pages/HomePage.tsx`](src/pages/HomePage.tsx) — list + search + sort menu, eagerly preloads ALL hero variants and card thumbs on mount (throttled to 6 concurrent)
+- [`src/pages/CharacterPage.tsx`](src/pages/CharacterPage.tsx) — hero (with `<picture>` for mobile/desktop split), Difficulty block, tabs OR search-results
+
+### Components
+- [`src/components/Layout.tsx`](src/components/Layout.tsx) — sticky header (no blur), `min-h-[60px]`, page padding `pb-[max(6rem,env(safe-area-inset-bottom))]` so ScrollToTop never overlaps the last tile
+- [`src/components/CharacterCard.tsx`](src/components/CharacterCard.tsx) — list tile with stars top-center, hover-zoom INSIDE the tile
+- [`src/components/CharacterList.tsx`](src/components/CharacterList.tsx) — grid; first 6 covers `loading="eager"`, rest lazy
+- [`src/components/SearchInput.tsx`](src/components/SearchInput.tsx) — wrapped in `<form role="search">`; Enter dismiss handled in `onKeyDown` (not onSubmit, that caused iOS zoom)
+- [`src/components/SortMenu.tsx`](src/components/SortMenu.tsx) — dropdown left of SearchInput, h-12 to match
+- [`src/components/Tabs.tsx`](src/components/Tabs.tsx) — Summary/Cards/Lore; **no transitions, no hover** (mobile flicker)
+- [`src/components/SummaryTab.tsx`](src/components/SummaryTab.tsx) — Available Equipment / Special Ability / Playstyle (Difficulty was moved out — now in CharacterPage above tabs)
+- [`src/components/CardsTab.tsx`](src/components/CardsTab.tsx) — per-level grid, hides far sealed levels (only first sealed shown)
+- [`src/components/SearchResults.tsx`](src/components/SearchResults.tsx) — char-page in-search results
+- [`src/components/CardTile.tsx`](src/components/CardTile.tsx) — uses `cardImageThumb ?? thumbUrl(cardImage)`
+- [`src/components/CardLightbox.tsx`](src/components/CardLightbox.tsx) — uses `cardImageFull ?? cardImage`; **multi-touch swipe ignored** (pinch-safe)
+- [`src/components/ArtLightbox.tsx`](src/components/ArtLightbox.tsx) — full-screen hero, NO auto-rotate (let device handle orientation)
+- [`src/components/ComplexityStars.tsx`](src/components/ComplexityStars.tsx) — 4-pointed `✦` filled + `✧` empty, always 5 slots, mobile size 26px / sm: 18px / hero 20px
+- [`src/components/PlaceholderImage.tsx`](src/components/PlaceholderImage.tsx) — has loading state with overlay "Loading" label until `<img>` fires `onLoad`
+- [`src/components/ScrollToTopButton.tsx`](src/components/ScrollToTopButton.tsx) — floating button bottom-right after 300px scroll
+
+### Lib
+- [`src/lib/assets.ts`](src/lib/assets.ts) — `assetUrl(path)`, `thumbUrl(path)` (→ `*.thumb.webp`), `mediumUrl(path)` (→ `*.medium.webp`)
+- [`src/lib/prefetch.ts`](src/lib/prefetch.ts) — `prefetchImageOnce(href, rel)` (deduped link-hint), `preloadImageEager(href)` (real `<Image>`, **6-concurrent queue**), `scheduleIdle(cb)`
 
 ### Theme
-- [`tailwind.config.js`](tailwind.config.js) — current palette is iron/silver/sage:
-  - `bone` `#d8dde0`
-  - `ember-400` `#c2d1cb` (silver-sage highlight)
-  - `ember-500` `#85a09a`
-  - `ember-600` `#4d5e58`
-  - `ember-700` `#2c3833`
-  - `ink-950..600` cool dark green-black
-- [`src/index.css`](src/index.css) — body background uses `var(--forest-bg-url)` injected from [`src/main.tsx`](src/main.tsx) (so vite base is honoured); 72% black overlay on top.
+- [`tailwind.config.js`](tailwind.config.js):
+  - `accent: '#fbbf24'` (warm amber) — character names, section headers, ability/card titles, tile/hero stars
+  - `tab-active.{400,500}: #fbbf24 → #ea580c` (gold→orange) — active tab gradient
+  - `ember.{400-700}: #c2d1cb / #85a09a / #4d5e58 / #2c3833` — supporting silver-sage palette
+  - `bone: #d8dde0` — body text
+  - `ink.{600-950}` — dark backgrounds
+- [`src/index.css`](src/index.css):
+  - Body uses `.app-bg` div in [`src/App.tsx`](src/App.tsx) for backdrop (NOT body bg-image)
+  - `.app-bg` size pinned in JS to `screen.width × screen.height`, transform-translate against Visual Viewport offsets so iOS keyboard can't shift it
+  - 10% black overlay via `.app-bg::after`
+  - `.section-header` provides the diamond bullet + amber underline used by all panel headings
+  - Hover-zoom on character grid is gated by `@media (hover: hover) and (pointer: fine)` — never fires on touch
+  - Panels use solid `bg-ink-900/{80,85,90}` (no backdrop-blur — caused mobile repaint thrash)
 
 ---
 
-## Pending tasks (in priority order user gave)
+## Image pipeline
 
-### 1. Color character names with a yellow-green tint
+### Variants live under `public/characters/<slug>/`
 
-**Where to apply:**
-- [`src/components/CharacterCard.tsx`](src/components/CharacterCard.tsx) — the `<h2>` with `text-ember-400` for the character name on each list tile
-- [`src/pages/CharacterPage.tsx`](src/pages/CharacterPage.tsx) — the `<h2>` with `text-ember-400` for the hero name on the detail page
+| Variant                   | Width | Quality | Used by                      |
+|---------------------------|-------|---------|------------------------------|
+| `cover.webp`              | full  | 85      | (currently unused)           |
+| `cover.thumb.webp`        | 400w  | 80      | List tile (CharacterCard)    |
+| `art.webp`                | full  | source  | ArtLightbox (full art)       |
+| `art.medium.webp`         | 1200w | 80      | CharacterPage hero (desktop variant in `<picture>`) |
+| `art.mobile.webp`         | 1000w | 80      | CharacterPage hero (mobile variant in `<picture>`) — **manually authored**, portrait-cropped per-character |
+| `art.full.webp`           | 2400w | 82      | (optional override for lightbox) |
+| `cards/.../*.webp`        | full  | 85      | CardLightbox                 |
+| `cards/.../*.thumb.webp`  | 600w  | 88      | CardTile grid                |
 
-User's example colour from his marker doodle is roughly **yellow-green / olive-lime** — something like `#c8d97a` or `#b8c668`. Suggested:
+Originals (`.png` / `.jpg`) were deleted in commit `d460ab9` —
+**don't re-add**, the gallery (`public/card-gallery.html`) and all
+data references run on `.webp`.
 
-```js
-// tailwind.config.js — add to theme.extend.colors
-'character-name': '#c8d97a',  // yellow-green for character names
-```
+### Background
+- `public/forest-bg.jpg` (~973 KB, source-quality) — **JPEG, not webp**
+- WebP re-encoding looked desaturated next to source; we ship the
+  raw JPEG. Body's `--forest-bg-url` CSS variable points at it.
 
-Then in CharacterCard / CharacterPage swap `text-ember-400` (silver-sage)
-on character titles for `text-character-name` (yellow-green).
-
-Keep `text-ember-400` for OTHER headings (section headers, badges) so the
-character name pops against the more muted accent palette.
-
-### 2. Header height consistency
-
-The Layout header heights between list and character page differ. The
-[`Layout`](src/components/Layout.tsx) component renders the same header
-shell, but content inside might be different sizes (or the back button
-adds height). Inspect:
-
-- [`src/components/Layout.tsx`](src/components/Layout.tsx) — single shared
-  header, `py-3` padding currently
-- The back button is a `tap-target` (≥44×44px), so when present it forces
-  the header taller than text-only
-
-**Fix:** make the header fixed-height (e.g. `min-h-[56px]` or whatever
-matches the back-button case), so list and character page headers are the
-same height. Remove conditional sizing.
-
-### 3. Header text changes
-
-Currently:
-- List page: `<Layout title="Oathsworn Character Sheets">`
-- Character page: `<Layout title={character.name} showBack>`
-
-User wants:
-- List page header text: **`Free Company Recruits`** (replace "Oathsworn Character Sheets")
-- Character page header text: **`Back`** (replace the character name) — visible *next* to the back arrow / replacing the title slot
-
-Edit:
-- [`src/pages/HomePage.tsx`](src/pages/HomePage.tsx) — change Layout `title` prop
-- [`src/pages/CharacterPage.tsx`](src/pages/CharacterPage.tsx) — change Layout `title` prop to a literal `"Back"` (same string regardless of character) — the back arrow already navigates `to="/"`, so "Back" reads as the action label
-
-### 4. Header font
-
-User said: don't change the font (keep `font-display` Cinzel), but make
-it **bold**. Currently the header `<h1>` uses `font-display text-lg sm:text-xl` — add `font-bold` (or `!font-bold` if Cinzel needs the override).
-
-Cinzel weights available in current import: `500, 600, 700`. Bold = 700.
-
-Either:
-- Add `font-bold` class to the `<h1>` in Layout.tsx
-- OR ensure Tailwind's `font-bold` actually picks the 700 weight Cinzel
-  loads (check the Google Fonts link in `index.html`)
-
-### 5. In-page search on the character page
-
-This is the most complex. User wants a search input on the character page
-that matches across:
-- Card names
-- Card cooldown numbers (e.g. typing `2` finds cd-2 cards)
-- Card Animus costs (e.g. typing `3` finds Animus-3 cards)
-- Words inside Lore / Playstyle / Available Equipment / Special Ability text
-
-Behaviour:
-- When the query matches a CARD: highlight that card / scroll to it / pin
-  matching cards at the top
-- When the query matches a TEXT BLOCK (lore, playstyle, equipment, special
-  ability): show those blocks on one page (i.e. switch out of tabs into a
-  "search results" view) with the matched word **highlighted with a background**
-
-**Implementation sketch:**
-- Add a search input near the top of the CharacterPage detail (probably
-  right under the hero, above the tabs row)
-- Add a `searchQuery` state
-- When `searchQuery` is empty → render normal Tabs view (current behaviour)
-- When non-empty → render a "Results" view that aggregates:
-  - Matching cards (CardTile rendered inline)
-  - Matching text blocks (Special Ability, Available Equipment, Playstyle,
-    Lore) with `<mark>` (or styled span) wrapping the matched substring
-- Helper: `highlightMatch(text, query)` returns React nodes with the
-  matched substring wrapped in a styled span (use `bg-ember-400/30` or
-  similar)
-
-Don't break the existing Tabs/Summary/Cards/Lore flow. The search input
-just overrides the panel area when active.
-
-### 6. Search input — square corners
-
-[`src/components/SearchInput.tsx`](src/components/SearchInput.tsx)
-currently uses `rounded-xl` on the input. Change to `rounded-none` (or
-just remove) for sharp corners — to match the new "etched iron" look of
-the cards.
-
-### 7. Active tab colour
-
-User drew a small olive/khaki rectangle as the suggested colour. Current
-active tab is `from-ember-400 to-ember-500` = `#c2d1cb → #85a09a`
-(silver-sage). User wants something closer to **olive / khaki / yellow-green**.
-
-Suggested tweak to [`src/components/Tabs.tsx`](src/components/Tabs.tsx):
-
-Either:
-- Use the new `character-name` token from task 1 (yellow-green) for the
-  active tab gradient
-- OR add a separate `tab-active` token to tailwind config
-
-Example:
-```ts
-// tailwind.config.js
-colors: {
-  'tab-active': {
-    400: '#c8d97a',
-    500: '#9eaf5a',
-  },
-}
-```
-```tsx
-// Tabs.tsx
-isActive
-  ? 'bg-gradient-to-b from-tab-active-400 to-tab-active-500 text-ink-950 shadow-ember'
-  : 'text-bone/70 hover:text-ember-400'
-```
-
-### 8. Lore tab font
-
-User wants the Lore body text in a "not too italic" stylized font for
-flavour but still readable. Suggestions:
-
-- [`Crimson Pro`](https://fonts.google.com/specimen/Crimson+Pro) (italic) —
-  oldstyle serif italic that reads great at body sizes
-- [`EB Garamond`](https://fonts.google.com/specimen/EB+Garamond) (italic)
-- [`Spectral`](https://fonts.google.com/specimen/Spectral) (italic)
-- Or just `font-display` (Cinzel) at body size with `italic` (Cinzel
-  Italic loads via the Google Fonts URL extension)
-
-Recommended: add an `<link>` for one of those fonts in `index.html`,
-declare a new `font-lore` family in `tailwind.config.js`, then apply it
-in [`src/components/LoreTab.tsx`](src/components/LoreTab.tsx) to the
-lore `<p>`.
-
-```js
-// tailwind.config.js
-fontFamily: {
-  display: ['"Cinzel"', 'serif'],
-  body: ['"Inter"', 'system-ui', 'sans-serif'],
-  lore: ['"Crimson Pro"', 'Georgia', 'serif'],
-},
-```
-
-```html
-<!-- index.html — extend the existing Google Fonts link -->
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
-```
-
-```tsx
-// LoreTab.tsx
-<p className="text-bone/90 text-[16px] leading-relaxed whitespace-pre-line font-lore italic">
-  {character.lore}
-</p>
-```
+### Generation scripts (in `scripts/`)
+- `convert-to-webp.mjs` — first-pass PNG/JPG → WebP (already run, all sources gone now, only useful if user adds a fresh raw)
+- `generate-thumbnails.mjs` — walks `*.webp`, makes `*.thumb.webp` (600w q88). Skips `*.thumb`/`*.medium`/`*.mobile`/`*.desktop`/`*.full`
+- `generate-hero-medium.mjs` — `art.webp` → `art.medium.webp` (1200w q80; constants are at top of file, user has tweaked them)
+- `import-hero-variants.mjs` — drop folder workflow: put files in `_incoming/` (gitignored), they auto-import to `public/characters/<slug>/art.{mobile,desktop,full}.webp` and the script prints a `characterMetadata.ts` snippet to paste
 
 ---
 
-## Recap of recently shipped (so the next session doesn't redo)
+## Service Worker (`public/sw.js`)
 
-These already work — don't re-touch unless explicitly asked:
+- `CACHE_NAME = 'oathsworn-helper-v1'` — bump version when bundle hashes / asset roster materially changes (forces purge on next visit)
+- Cache-first for `.webp / .png / .css / .js / .woff2` etc.
+- Stale-while-revalidate for the HTML shell
+- Pruned in `activate`
 
-- ✅ 12 character L1 sets (7 each, 11 for Witch) populated from 2nd-edition card images
-- ✅ Each ability has `cooldown` and `animusCost` (with `cost` override for variable "?" Animus cards)
-- ✅ Display format: `"Cooldown N, Animus cost M"` (composed by adapter `formatCost` in `characters.ts`)
-- ✅ `role` field updated for all 12 (e.g. "Tank / Control / Melee DPS") per user-supplied tags txt
-- ✅ Lore + playstyle filled from docx for all 12
-- ✅ List ordered alphabetically by displayName
-- ✅ Forest BG (`public/forest-bg.jpg`) with CSS-var `--forest-bg-url` injected from main.tsx
-- ✅ Iron/silver/sage palette in tailwind.config.js
-- ✅ Cards tab: cd 0 starter centered alone in row 1, rest in 2-col grid
-- ✅ Summary tab: Available Equipment / Special Ability / Playstyle (in this order)
-- ✅ Character cards: square corners + L-shape silver-sage corner brackets
-- ✅ Hero on detail page opens fullscreen ArtLightbox on tap
-- ✅ Cards open CardLightbox with prev/next + swipe
-- ✅ Mobile/desktop hero focal point via `heroObjectPositionMobile/Desktop`
-- ✅ Bug fixes: tab-switch scroll-pin, scroll-to-top on slug change
+User-side: hard reload or close+reopen Mini App to pick up a new
+deploy unless VERSION bumped.
 
-## Build state
+---
 
-Last build:
-```
-✓ 55 modules transformed.
-dist/assets/index-BCVBbX-K.css   22.84 kB │ gzip:  5.11 kB
-dist/assets/index-NcHI4gdD.js   263.57 kB │ gzip: 85.20 kB
-✓ built in 1.28s
-```
+## Recent commits (newest first, most relevant)
 
-After implementing the 8 tasks above, run `npm.cmd run build` once more
-and confirm green.
+- `86eae55` keyboard dismiss via onKeyDown
+- `82a36e1` Visual Viewport translate to pin bg
+- `715056c` JS-pin bg to screen size, drop blur from onSubmit
+- `d392cd8` PlaceholderImage loading state, throttled preload, search form
+- `2f4fee2` Difficulty above tabs, 10% bg dim, no auto-rotate in lightbox, sort+search h-12
+- `95b1dfa` stars in Difficulty block, fixed bg div, mobile stars lift
+- `ed7c59b` source JPEG bg, mobile-touch zoom kill, pinch-safe lightbox swipe
+- `5a5795d` stars 4-pointed always-5, centered top
+- `e1e4438` initial 5-pointed stars (later reverted)
+- `f64f510` tabs flicker fix, panel blur removal
+- `5c1d44e` sort menu, hi-res bg, Service Worker added
+- `102ac78` complexity stars + listName fields
+- `779ea2a` lighter backdrop, hide Level 2, narrow-mobile tab fixes
+- `d460ab9` **big bang**: WebP migration + hero variants + image perf + UI polish
+
+---
+
+## Known good behaviour to preserve
+
+- Hover zoom on character tile ONLY on real pointer devices
+- Tabs have NO transition / NO hover (intentional — both caused
+  mobile flicker / sticky touch hover)
+- Pinch-zoom in CardLightbox does NOT swipe to next card
+- ArtLightbox does NOT auto-rotate (device's own auto-rotate handles
+  orientation; double-rotation bug if we layer our own)
+- `.app-bg` is JS-sized; don't switch back to body `background-image`
+  with `attachment: fixed` (caused mobile flicker)
+- Service Worker registration is `try { register } catch {}` — older
+  Telegram WebApp clients don't allow it; that's fine
+- `manualAbilityFillTemplate.ts` already uses `.webp` paths; manual
+  cd-0 workflow stays untouched
+
+---
+
+## Open / nice-to-have (not started)
+
+1. **Card builder** — user wants a tool to add Level 2+ cards
+   eventually; until then `levelGates.ts` keeps Level 2 hidden
+2. **Bumping `sw.js` VERSION on every deploy** — currently we don't,
+   so users have to hard-reload after asset changes. Could be an
+   `npm run deploy:gh` wrapper that sed-bumps it
+3. **Fewer card thumbs in flight on slow connections** — concurrency
+   is hard-capped at 6 (HTTP/1.1 limit); HTTP/2 negotiation could
+   reverse this but GH Pages already serves H/2
+
+---
 
 ## How to greet the next session
 
-Tell them: "Take task list from `C:\Git\OS Tabletop Helper\SAVEPOINT.md`,
-work through items 1–8 in order, run `npm.cmd run build` after each, ask
-me before doing anything destructive."
+> "Read `C:\Git\OS Tabletop Helper\SAVEPOINT.md` first. Project is
+> live at https://rogue-tomato.github.io/OS-Tabletop-Helper/ — make
+> changes, run the build/commit/push/gh-pages cycle from the SAVEPOINT
+> 'Deploy cycle' section, ask before destructive ops."
