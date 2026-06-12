@@ -42,7 +42,12 @@ export const defaultLevelGates: Record<CardLevel, LevelGate> = {
 export const perCharacterOverrides: Record<
   string,
   Partial<Record<CardLevel, LevelGate>>
-> = {};
+> = {
+  priest: { 2: { revealed: true } },
+  'adendri-ranger': { 2: { revealed: true } },
+  'avi-harbinger': { 2: { revealed: true } },
+  'thracian-blade': { 2: { revealed: true } },
+};
 
 export function getLevelGate(slug: string, level: CardLevel): LevelGate {
   return perCharacterOverrides[slug]?.[level] ?? defaultLevelGates[level];

@@ -842,7 +842,8 @@ Adherents to 'the Way' can be found in all echelons of life. Those with a streng
 // =====================================================================
 //                       THE A'DENDRI RANGER
 // All 6 L1 cards visible in HTML (note: card title shows "MULTI SHOT"
-// as two words). L2 + L15 are prose-only.
+// as two words). L2 is confirmed from campaign card images; L15 is
+// prose-only.
 // =====================================================================
 const rangerRange: [number, number] = [29, 34];
 const ranger: OathswornCharacter = {
@@ -931,16 +932,16 @@ It is said the Rangers grow their arrows within their own body's, ensuring their
   unlockedAbilities: {
     level2: buildUnlocked('adendri-ranger', rangerRange, 2, [
       {
-        name: 'Amber Daggers',
+        name: 'Double Stab',
         shortSummary:
-          'Animus-efficient close-range pair attack for when you need breathing room. Remember you wear leaves and bark. (PDF prose only — not in HTML images; name verify.)',
-        cardImage: null,
+          'Two adjacent attacks using bow might. Ignore the highest numbered Might card on each attack; only one can trigger Determination.',
+        needsVerification: false,
       },
       {
         name: 'Disarming Shot',
         shortSummary:
-          'Remove an enemy Might card anywhere in bow range — keeps your fragile teammates alive. (PDF prose only.)',
-        cardImage: null,
+          'After a non-adjacent enemy in bow range draws damage, ignore one enemy Might card of your choice.',
+        needsVerification: false,
       },
     ]),
     level5: buildUnlocked('adendri-ranger', rangerRange, 5, [
@@ -1441,8 +1442,7 @@ It is no surprise Penitents often seek out the The Oath. To join a Free Company 
 // =====================================================================
 //                       THE AVI HARBINGER
 // HTML images cover 2 of 6 L1 (Deadeye Shot, One Soul) + L5 + L10 + L15.
-// Backstab/Prophetic Fulfilment/Foreshadowing/Prescient Strike + L2 are
-// prose-only.
+// L2 is confirmed from campaign card images.
 // =====================================================================
 const harbingerRange: [number, number] = [51, 55];
 const harbinger: OathswornCharacter = {
@@ -1531,13 +1531,17 @@ With a word or gesture the Avi can help others skirt the perils of fate. When co
   unlockedAbilities: {
     level2: buildUnlocked('avi-harbinger', harbingerRange, 2, [
       {
+        name: 'Foreshadowing',
+        shortSummary:
+          'Give a nearby ally Battleflow or Defense, then inspect and reorder up to the top two Stage Cards.',
+        needsVerification: false,
+      },
+      {
         name: 'Quill Throw',
         shortSummary:
-          'Avi feathers as projectiles: helpful crowd damage at range when minions threaten the Free Company. (PDF prose only.)',
-        cardImage: null,
+          'Attack up to three enemies at range 2 with one damage draw; a close prediction reduces the Animus cost.',
+        needsVerification: false,
       },
-      // Wingslam was an L2 unlock in 1st edition; in 2nd edition it
-      // ships as an L1 starter (see level1Abilities above).
     ]),
     level5: buildUnlocked('avi-harbinger', harbingerRange, 5, [
       {
@@ -1587,12 +1591,11 @@ With a word or gesture the Avi can help others skirt the perils of fate. When co
 // =====================================================================
 //                            THE BLADE
 //                    (asset name: Thracian Blade)
-// HUGE upgrade from the previous pass. HTML images give us:
+// Campaign card images give us:
 //   L1 (6 cards confirmed): Charging Boar, Roll, Winnowing Strike,
-//        Somersault, Mules Regard, Cleaving Slide
-//   L2 (2): Master Parry (the previously-unnamed defensive card),
-//        Weapon Throw
-//   L5 (2): Rising Tusk, Cross Cut
+//        Mule's Regard, Cleaving Slide, Master Parry
+//   L2 (2): Flurry, Rising Tusk
+//   L5 (1 confirmed in the older capture): Cross Cut
 //   L15 (2): Perfect Form, Blade Call (previously empty)
 // L10 (Nightfall, Blade Dance) is still prose-only.
 // =====================================================================
@@ -1681,29 +1684,23 @@ Only some have the strength to pay that price. Those that do, emerge from the Co
   ]),
   unlockedAbilities: {
     level2: buildUnlocked('thracian-blade', bladeRange, 2, [
-      // Master Parry was an L2 unlock in 1st edition; in 2nd edition
-      // it ships as an L1 starter (see level1Abilities above).
-      // Somersault was an L1 starter in 1st edition; in 2nd edition it
-      // is no longer in the L1 hand. Its current placement is unknown.
       {
-        name: 'Weapon Throw',
-        // File ships as 02_weapon_throw.webp — slot 01 in level-2/ is
-        // the dead 1st-edition Master Parry asset (now an L1 starter).
-        positionInLevel: 2,
+        name: 'Flurry',
         shortSummary:
-          'Throw your weapon for big damage — in Viper stance, throw it while running, impale a foe, and retrieve it before it hits the ground.',
+          'After a qualifying critical attack, perform an additional attack without triggering Determination.',
+        needsVerification: false,
+      },
+      {
+        name: 'Rising Tusk',
+        shortSummary:
+          'Attack from the target flank in Boar stance to treat the target as having 1 less Defense.',
         needsVerification: false,
       },
     ]),
     level5: buildUnlocked('thracian-blade', bladeRange, 5, [
       {
-        name: 'Rising Tusk',
-        shortSummary:
-          'Cheap and very powerful in the right position — 1 defense reduction can double your HP loss vs the target.',
-        needsVerification: false,
-      },
-      {
         name: 'Cross Cut',
+        positionInLevel: 2,
         shortSummary:
           "Two empowered attacks; high Animus cost slows your battleflow but the damage ruins the enemy's day.",
         needsVerification: false,
